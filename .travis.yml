@@ -4,5 +4,7 @@ python:
   - '3.8'
 install:
   - python -m pip install flake8
+  - python -m pip install -r requirements-test.txt
 script:
   - python -m flake8
+  - python -m unittest test_main
