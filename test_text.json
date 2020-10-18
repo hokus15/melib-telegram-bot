@@ -1,0 +1,23 @@
+{
+    "update_id": 111111111,
+    "message": {
+        "message_id": 129,
+        "from": {
+            "id": 1234567890,
+            "is_bot": false,
+            "first_name": "Firstname",
+            "last_name": "Lastname",
+            "username": "username",
+            "language_code": "es"
+        },
+        "chat": {
+            "id": 1234567890,
+            "first_name": "Firstname",
+            "last_name": "Lastname",
+            "username": "username",
+            "type": "private"
+        },
+        "date": 1602966203,
+        "text": "Qwerty"
+    }
+}
