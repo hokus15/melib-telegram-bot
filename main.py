@@ -267,10 +267,23 @@ def _reply_text(update, stations, radius):
 
 def _escape_data(s):
     '''
-    Telegram tiene ciertos caracteres reservados que hay que reemplazar.
+    Telegram tiene ciertos caracteres reservados que hay que "escapar".
     '''
     return s.replace('_', '\\_') \
             .replace('*', '\\*') \
             .replace('[', '\\[') \
+            .replace(']', '\\]') \
+            .replace('(', '\\(') \
+            .replace(')', '\\)') \
+            .replace('~', '\\~') \
             .replace('`', '\\`') \
-            .replace('.', '\\.')
+            .replace('>', '\\>') \
+            .replace('#', '\\#') \
+            .replace('+', '\\+') \
+            .replace('-', '\\-') \
+            .replace('=', '\\=') \
+            .replace('|', '\\|') \
+            .replace('{', '\\{') \
+            .replace('}', '\\}') \
+            .replace('.', '\\.') \
+            .replace('!', '\\!')
