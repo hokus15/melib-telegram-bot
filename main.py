@@ -180,7 +180,7 @@ def _handle_update(update):
                      f'{SEND_LOCATION_INSTRUCTIONS}\n\n'
                      '‼ *ATENCIÓN* ‼\n'
                      'La distancia la mido en *linea recta* entre tu ubicación '
-                     'y la ubicación del cargador. No tengo en cuenta la ruta '
+                     'y la ubicación del cargador\\. No tengo en cuenta la ruta '
                      'ni la altura de ninguno de los dos puntos\\. Por lo que la '
                      'distancia para llegar al cargador puede variar dependiendo '
                      'del camino que sigas hasta él\\.',
