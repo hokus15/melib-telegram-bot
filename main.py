@@ -203,7 +203,7 @@ def _handle_update(update):
         else:
             update.callback_query.answer()
             update.callback_query.edit_message_text(f'Vale {update.callback_query.from_user.first_name}, '
-                                                    'tú mandas, no amplio el rádio de búsqueda\\.')
+                                                    'tú mandas, no amplio el rádio de búsqueda.')
 
 
 def _reply_text(update, stations, radius):
