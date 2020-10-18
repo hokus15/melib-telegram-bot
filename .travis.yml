@@ -1,0 +1,8 @@
+---
+language: python
+python:
+  - '3.8'
+install:
+  - python -m pip install flake8
+script:
+  - python -m flake8
