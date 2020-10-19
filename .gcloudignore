@@ -19,3 +19,4 @@ test*.*
 tox.ini
 melib.png
 requirements-test.txt
+.travis.yml
