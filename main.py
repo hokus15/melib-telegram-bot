@@ -100,7 +100,7 @@ def error_callback(update, context):
 @send_action(telegram.ChatAction.TYPING)
 def help(update, context):
     # print('context.chat_data = {}'.format(context.chat_data))
-    location_keyboard = telegram.KeyboardButton(text="Enviar ubicación", request_location=True)
+    location_keyboard = telegram.KeyboardButton(text="Enviar mi ubicación actual", request_location=True)
     reply_markup = telegram.ReplyKeyboardMarkup([[location_keyboard]])
     update.message.reply_text(
         text=f'⚠ Hola {update.message.from_user.first_name}, para poder darte '
