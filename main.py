@@ -75,6 +75,7 @@ def send_action(action):
 
 
 def error_callback(update, context):
+    print('Excepción lanzada cuando se procesaba una actualización: {}'.format(context.error))
     tb_list = traceback.format_exception(None, context.error, context.error.__traceback__)
     tb = ''.join(tb_list)
     message = (
@@ -171,11 +172,12 @@ def callback(update, context):
             else:
                 message = f'💩 ¡Vaya\\! Pues ni ampliando el rádio de búsqueda a {radius} metros ' \
                     'he encontrado cargadores libres, comparte otra ubicación y vuelve a probar\\.'
-                update.callback_query.answer()
-                update.callback_query.edit_message_text(parse_mode=telegram.ParseMode.MARKDOWN_V2,
-                                                        disable_web_page_preview=True,
-                                                        text=message)
+            update.callback_query.answer()
+            update.callback_query.edit_message_text(parse_mode=telegram.ParseMode.MARKDOWN_V2,
+                                                    disable_web_page_preview=True,
+                                                    text=message)
         except KeyError:
+            print('No he podido encontrar la localización en chat_data: {}'.format(context.chat_data))
             update.callback_query.answer()
             update.callback_query.edit_message_text(text='Ups! No he podido ampliar el rádio de búsqueda, '
                                                     'comparte otra ubicación y vuelve a probar.')
