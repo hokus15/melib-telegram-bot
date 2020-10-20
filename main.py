@@ -13,7 +13,7 @@ from functools import wraps
 from telegram.ext import MessageHandler, CallbackQueryHandler, Dispatcher, Filters
 # from telegram.error import TelegramError, BadRequest
 
-# Radio por defecto en metros.
+# Rádio por defecto en metros.
 DEFAULT_RADIUS = 500
 
 STATION_BASE_URL = 'https://ws.consorcidetransports.com/produccio/ximelib-mobile/rest/devicegroups'
@@ -109,7 +109,7 @@ def help(update, context):
              'ℹ *CONSEJO* ℹ\n'
              'A parte de enviar tu ubicación actual, puedes enviar la ubicación '
              'de tu destino para saber los cargadores que hay libres cerca\\.\n\n'
-             f'{SEND_LOCATION_INSTRUCTIONS}'
+             f'{SEND_LOCATION_INSTRUCTIONS}\n\n'
              '‼ *ATENCIÓN* ‼\n'
              'La distancia la mido en *linea recta* entre la ubicación enviada '
              'y la ubicación del cargador\\. No tengo en cuenta la ruta '
@@ -128,14 +128,14 @@ def location(update, context):
         'latitude': str(update.message.location.latitude),
         'longitude': str(update.message.location.longitude)
     })
-    # Si hay estaciones de carga dentro del radio
+    # Si hay estaciones de carga dentro del rádio
     if len(free_stations) > 0:
         message = _free_stations_response(free_stations, DEFAULT_RADIUS)
         update.message.reply_text(
             parse_mode=telegram.ParseMode.MARKDOWN_V2,
             disable_web_page_preview=True,
             text=message)
-    # Si no se han encontrado estaciones de carga libres dentro del radio
+    # Si no se han encontrado estaciones de carga libres dentro del rádio
     else:
         # Prepara la respuesta con las opciones
         message = f'💩 No he encontrado cargadores libres en {DEFAULT_RADIUS} metros'
@@ -164,22 +164,22 @@ def callback(update, context):
             chat_location = json.loads(context.chat_data['location'])
             location = telegram.Location(float(chat_location['longitude']), float(chat_location['latitude']))
             free_stations = _free_stations_in_range(location, radius)
-            # Si hay estaciones de carga dentro del radio
+            # Si hay estaciones de carga dentro del rádio
             if len(free_stations) > 0:
                 message = _free_stations_response(free_stations, radius)
-            # Si no se han encontrado estaciones de carga libres dentro del radio
+            # Si no se han encontrado estaciones de carga libres dentro del rádio
             else:
-                message = f'💩 ¡Vaya! Pues ni ampliando el radio de búsqueda a {radius} metros ' \
-                    'he encontrado cargadores libres, comparte otra ubicación y vuelve a probar.'
+                message = f'💩 ¡Vaya\\! Pues ni ampliando el rádio de búsqueda a {radius} metros ' \
+                    'he encontrado cargadores libres, comparte otra ubicación y vuelve a probar\\.'
                 update.callback_query.answer()
                 update.callback_query.edit_message_text(parse_mode=telegram.ParseMode.MARKDOWN_V2,
                                                         disable_web_page_preview=True,
                                                         text=message)
         except KeyError:
             update.callback_query.answer()
-            update.callback_query.edit_message_text(text='Ups\\! No he podido ampliar el rádio de búsqueda, '
+            update.callback_query.edit_message_text(text='Ups! No he podido ampliar el rádio de búsqueda, '
                                                     'comparte otra ubicación y vuelve a probar.')
-    # Si no quiere ampliar el radio
+    # Si no quiere ampliar el rádio
     else:
         update.callback_query.answer()
         update.callback_query.edit_message_text(f'Vale {update.callback_query.from_user.first_name}, '
@@ -224,7 +224,7 @@ def _autheticate(request):
 def _free_stations_in_range(location, radius):
     '''
     Devuelve una lista de las estaciones libres o parcialmente ocupadas dentro
-    del radio de la ubicación.
+    del rádio de la ubicación.
     '''
 
     # Se puede filtrar por los siguentes conceptos:
