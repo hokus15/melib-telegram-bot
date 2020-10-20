@@ -39,7 +39,7 @@ SEND_LOCATION_INSTRUCTIONS = 'ℹ *Para enviar una ubicación* ℹ \n' \
                              '1\\. Pulsa sobre el clip \\(📎\\) que encontrarás en la ventana de mensaje\\.\n' \
                              '2\\. Elige la opción de `Ubicación`\\.\n' \
                              '3\\. Desplázate por el mapa hasta la ubicación que quieras\\.\n' \
-                             '3\\. Elije `Enviar la ubicación seleccionada`\\.'
+                             '4\\. Elije `Enviar la ubicación seleccionada`\\.'
 
 # Si no encuentra la variable de entorno usa 1234567890 para los tests
 VALID_USERS = os.environ.get('VALID_USERS', '1234567890').split(';')
@@ -109,6 +109,7 @@ def help(update, context):
              'ℹ *CONSEJO* ℹ\n'
              'A parte de enviar tu ubicación actual, puedes enviar la ubicación '
              'de tu destino para saber los cargadores que hay libres cerca\\.\n\n'
+             f'{SEND_LOCATION_INSTRUCTIONS}',
              '‼ *ATENCIÓN* ‼\n'
              'La distancia la mido en *linea recta* entre la ubicación enviada '
              'y la ubicación del cargador\\. No tengo en cuenta la ruta '
@@ -176,7 +177,7 @@ def callback(update, context):
                                                         text=message)
         except KeyError:
             update.callback_query.answer()
-            update.callback_query.edit_message_text(text='Ups! No he podido ampliar el rádio de búsqueda, '
+            update.callback_query.edit_message_text(text='Ups\\! No he podido ampliar el rádio de búsqueda, '
                                                     'comparte otra ubicación y vuelve a probar.')
     # Si no quiere ampliar el radio
     else:
