@@ -192,7 +192,8 @@ dispatcher = Dispatcher(bot=bot,
                         workers=0,
                         use_context=True)
 dispatcher.add_error_handler(error_callback)
-dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, help))
+# Para procesar cualquier texto
+dispatcher.add_handler(MessageHandler(Filters.text, help))
 dispatcher.add_handler(MessageHandler(Filters.location, location))
 dispatcher.add_handler(CallbackQueryHandler(callback))
 
