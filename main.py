@@ -109,7 +109,7 @@ def help(update, context):
              'ℹ *CONSEJO* ℹ\n'
              'A parte de enviar tu ubicación actual, puedes enviar la ubicación '
              'de tu destino para saber los cargadores que hay libres cerca\\.\n\n'
-             f'{SEND_LOCATION_INSTRUCTIONS}',
+             f'{SEND_LOCATION_INSTRUCTIONS}'
              '‼ *ATENCIÓN* ‼\n'
              'La distancia la mido en *linea recta* entre la ubicación enviada '
              'y la ubicación del cargador\\. No tengo en cuenta la ruta '
