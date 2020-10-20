@@ -7,5 +7,5 @@ steps:
   - --source=.
   - --allow-unauthenticated
   - --runtime=python38
-  - --set-env-vars="TELEGRAM_TOKEN=${_TELEGRAM_TOKEN},WEBHOOK_TOKEN=${_WEBHOOK_TOKEN},VALID_USERS=${_VALID_USERS}"
+  - --set-env-vars=TELEGRAM_TOKEN=${_TELEGRAM_TOKEN},WEBHOOK_TOKEN=${_WEBHOOK_TOKEN},VALID_USERS=${_VALID_USERS}
   - --trigger-http 
