@@ -13,7 +13,7 @@ from functools import wraps
 from telegram.ext import (MessageHandler, CallbackQueryHandler, ConversationHandler,
                           CommandHandler, Dispatcher, Filters)
 
-STATION_BASE_URL = 'https://ws.consorcidetransports.com/produccio/ximelib-mobile/rest/devicegroups'
+CHARGER_BASE_URL = 'https://ws.consorcidetransports.com/produccio/ximelib-mobile/rest/devicegroups'
 
 HEADERS = {
     'content-type': "application/json",
@@ -52,11 +52,15 @@ def restricted(func):
         if user_id not in VALID_USERS:
             update.effective_message.reply_text(
                 text=f'Hola {update.effective_user.first_name}, por '
-                'ahora, no puedes usar el bot, por favor proporciona '
-                f'el siguiente número: {user_id} al administrador\\.\n'
-                'Una vez dado de alta prueba a decirme algo o enviarme una ubicación:\n'
+                'ahora, no puedes usar el bot, por favor, proporciona '
+                f'el siguiente número al administrador:\n\n*{user_id}*\n\n'
+                'Una vez dado de alta prueba a escribirme algo o enviarme una ubicación:\n'
                 f'{SEND_LOCATION_INSTRUCTIONS}',
                 parse_mode=telegram.ParseMode.MARKDOWN_V2)
+            message = f'Hola soy {update.effective_user.first_name} {update.effective_user.last_name} ' \
+                f'y mi usuario de Telegram es:\n*{user_id}*\nPor favor dame de ' \
+                'alta en el sistema para que pueda acceder al bot.'
+            context.bot.send_message(chat_id=VALID_USERS[0], text=message, parse_mode=telegram.ParseMode.MARKDOWN_V2)
             return
         return func(update, context, *args, **kwargs)
     return wrapped
@@ -89,6 +93,9 @@ def error_callback(update, context):
         html.escape(str(context.user_data)),
         html.escape(tb),
     )
+    # Corta el mensaje si es más largo de lo permitido
+    if len(message > 4096):
+        message = message[:4089] + '</pre>'
     # Envía el mensaje de error al administrador (ha de ser el primero de la lista de usuarios)
     context.bot.send_message(chat_id=VALID_USERS[0], text=message, parse_mode=telegram.ParseMode.HTML)
     update.effective_message.reply_text(text='Ups! Parece que algo no ha salido bien.\n '
@@ -156,10 +163,10 @@ def callback(update, context):
         try:
             chat_location = json.loads(context.chat_data['location'])
             location = telegram.Location(float(chat_location['longitude']), float(chat_location['latitude']))
-            free_stations = _free_stations_in_range(location, radius)
+            free_chargers = _free_chargers(location)
             # Si hay estaciones de carga dentro del rádio
-            if len(free_stations) > 0:
-                message = _free_stations_response(free_stations, radius)
+            if len(free_chargers) > 0:
+                message = _free_chargers_response(free_chargers, radius)
             # Si no se han encontrado estaciones de carga libres dentro del rádio
             else:
                 message = f'💩 ¡Vaya\\! No he encontrado un cargador libre en {radius} metros, ' \
@@ -169,7 +176,7 @@ def callback(update, context):
                                                     disable_web_page_preview=True,
                                                     text=message)
         except KeyError:
-            print('No he podido encontrar la localización en chat_data: {}'.format(context.chat_data))
+            print('No he podido encontrar la ubicación en chat_data: {}'.format(context.chat_data))
             update.callback_query.answer()
             update.callback_query.edit_message_text(text='Ups! No he podido realizar la búsqueda, '
                                                     'comparte otra ubicación y vuelve a probar.')
@@ -200,10 +207,10 @@ def _autheticate(request):
         return False
 
 
-def _free_stations_in_range(location, radius):
+def _free_chargers(location):
     '''
-    Devuelve una lista de las estaciones libres o parcialmente ocupadas dentro
-    del rádio de la ubicación.
+    Devuelve una lista de los cargadores libres o parcialmente ocupados junto
+    con la distancia en metros a la ubiacación proporcionada.
     '''
 
     # Se puede filtrar por los siguentes conceptos:
@@ -242,46 +249,69 @@ def _free_stations_in_range(location, radius):
     # Envía la petición
     response = requests.request(
         "POST",
-        STATION_BASE_URL,
+        CHARGER_BASE_URL,
         data=json.dumps(payload),
         headers=HEADERS)
-    all_station_json_data = response.json()
+    all_chargers_json_data = response.json()
     latlong = (location.latitude, location.longitude)
-    stations = {}
-    for value in all_station_json_data:
-        station_id = value['id']
-        station_location = (float(value['lat']), float(value['lng']))
+    chargers = {}
+    for value in all_chargers_json_data:
+        charger_id = value['id']
+        charger_location = (float(value['lat']), float(value['lng']))
         try:
             # Calcula la distancia en metros desde la estación de carga
             # a la ubicación pasada por el usuario
-            dist = distance.distance(latlong, station_location).meters
-            # print(f'Station id: {station_id}, distance: {dist:0.0f}m')
-            if dist <= radius:
-                stations[station_id] = dist
-                # print(f'Added station id: {station_id}, distance: {dist:0.0f}m to list...')
+            dist = distance.distance(latlong, charger_location).meters
+            chargers[charger_id] = dist
         except ValueError:
-            print(f'Bad location {station_location} for station {station_id}')
-    return stations
+            print(f'Bad location {charger_location} for charger {charger_id}')
+    return chargers
 
 
-def _free_stations_response(stations, radius):
+def _free_chargers_response(chargers, radius):
     '''
-    Prepara el texto de respuesta con las estaciones de carga libres.
+    Prepara el texto de respuesta con las estaciones de carga libres dentro del rango.
     '''
     message = ''
-    # Ordena las estaciones de carga por distancia
-    sorted_stations = sorted(stations.items(), key=lambda x: x[1])
-    message += f'🎉🎊 He encontrado los siguientes cargadores disponibles en {radius} metros:\n\n'
-    for station in sorted_stations:
-        station_status_url = f'{STATION_BASE_URL}/{station[0]}'
-        response = requests.request("GET", station_status_url, headers=HEADERS)
-        station_status = response.json()
-        message += f"🔌🆓 Cargador para *{PLACE_TYPE[station_status['devices'][0]['placeType']]} " \
-                   f"{STATUS[station_status['status']]}* a " \
-                   f"*{station[1]:0.0f}* metros en " \
-                   f"[*{_escape_data(station_status['address'])}*]" \
-                   f"(https://www.google.com/maps/place/{station_status['lat']},{station_status['lng']})\n"
+    message_charger = ''
+    message_header = ''
+    if len(chargers) > 0:
+        # Ordena las estaciones de carga por distancia
+        sorted_chargers = sorted(chargers.items(), key=lambda x: x[1])
+        # Siempre hay que retornar al menos el cargador más cercano
+        closest_charger = sorted_chargers.pop(0)
+        charger_data = _get_charger_data(closest_charger[0])
+        message_charger += _get_charger_text(charger_data, closest_charger[1])
+        # Si después de quitar el cargador más cercano todavía quedan libres
+        if len(sorted_chargers) > 0:
+            message_header = f'No he encontrado cargadores disponibles en {radius} metros, pero el más cercano es:\n\n'
+            for charger in sorted_chargers:
+                if charger[1] <= radius:
+                    message_header = '🎉🎊 He encontrado los siguientes cargadores ' \
+                        f'disponibles en {radius} metros:\n\n'
+                    charger_data = _get_charger_data(charger[0])
+                    message_charger += _get_charger_text(charger_data, charger[1])
+                else:
+                    break
+            message = message_header + message_charger
+    else:
+        message = 'Algo muy gordo ha ocurrido porque no hay ningúncargador libre en las Baleares'
     # print(message)
+    return message
+
+
+def _get_charger_data(id):
+    charger_status_url = f'{CHARGER_BASE_URL}/{id}'
+    response = requests.request("GET", charger_status_url, headers=HEADERS)
+    return response.json()
+
+
+def _get_charger_text(charger, distance):
+    message = f"🔌🆓 Cargador para *{PLACE_TYPE[charger['devices'][0]['placeType']]} " \
+        f"{STATUS[charger['status']]}* a " \
+        f"*{distance:0.0f}* metros en " \
+        f"[*{_escape_data(charger['address'])}*]" \
+        f"(https://www.google.com/maps/place/{charger['lat']},{charger['lng']})\n"
     return message
 
 
@@ -322,7 +352,7 @@ conv_handler = ConversationHandler(
         RADIUS: [MessageHandler(Filters.location, location)],
         UPDATE_RADIUS: [CallbackQueryHandler(callback)],
     },
-    fallbacks=[CommandHandler('cancel', cancel)],
+    fallbacks=[CommandHandler('cancel', cancel)]
 )
 dispatcher.add_error_handler(error_callback)
 dispatcher.add_handler(conv_handler)

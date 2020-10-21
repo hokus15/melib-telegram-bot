@@ -43,10 +43,10 @@ class ClientTestCase(unittest.TestCase):
                             r = flask.request
                             main.webhook(r)
 
-    def test_free_stations_in_range(self):
-        location = telegram.Location(2.703475, 39.685317)
-        radius = 100
-        main._free_stations_in_range(location, radius)
+#    def test_free_stations_in_range(self):
+#        location = telegram.Location(2.703475, 39.685317)
+#        radius = 100
+#        main._free_stations_in_range(location, radius)
 
 
 if __name__ == "__main__":
