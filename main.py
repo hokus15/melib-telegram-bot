@@ -10,11 +10,8 @@ import traceback
 from flask import abort
 from geopy import distance
 from functools import wraps
-from telegram.ext import MessageHandler, CallbackQueryHandler, Dispatcher, Filters
-# from telegram.error import TelegramError, BadRequest
-
-# Rádio por defecto en metros.
-DEFAULT_RADIUS = 500
+from telegram.ext import (MessageHandler, CallbackQueryHandler, ConversationHandler,
+                          CommandHandler, Dispatcher, Filters)
 
 STATION_BASE_URL = 'https://ws.consorcidetransports.com/produccio/ximelib-mobile/rest/devicegroups'
 
@@ -34,7 +31,6 @@ STATUS = {
     'OCCUPIED_PARTIAL': 'parcialmente ocupado'
 }
 
-
 SEND_LOCATION_INSTRUCTIONS = 'ℹ *Para enviar una ubicación* ℹ \n' \
                              '1\\. Pulsa sobre el clip \\(📎\\) que encontrarás en la ventana de mensaje\\.\n' \
                              '2\\. Elige la opción de `Ubicación`\\.\n' \
@@ -44,6 +40,9 @@ SEND_LOCATION_INSTRUCTIONS = 'ℹ *Para enviar una ubicación* ℹ \n' \
 # Si no encuentra la variable de entorno usa 1234567890 para los tests
 VALID_USERS = os.environ.get('VALID_USERS', '1234567890').split(';')
 
+# Estados de conversación
+RADIUS, UPDATE_RADIUS = range(2)
+
 
 def restricted(func):
     """Decorator: Comprueba si el usuario puede ejecutar el comando `func`."""
@@ -51,11 +50,11 @@ def restricted(func):
     def wrapped(update, context, *args, **kwargs):
         user_id = str(update.effective_user.id)
         if user_id not in VALID_USERS:
-            update.message.reply_text(
+            update.effective_message.reply_text(
                 text=f'Hola {update.effective_user.first_name}, por '
                 'ahora, no puedes usar el bot, por favor proporciona '
                 f'el siguiente número: {user_id} al administrador\\.\n'
-                'Una vez dado de alta prueba a enviarme una ubicación:\n'
+                'Una vez dado de alta prueba a decirme algo o enviarme una ubicación:\n'
                 f'{SEND_LOCATION_INSTRUCTIONS}',
                 parse_mode=telegram.ParseMode.MARKDOWN_V2)
             return
@@ -92,19 +91,19 @@ def error_callback(update, context):
     )
     # Envía el mensaje de error al administrador (ha de ser el primero de la lista de usuarios)
     context.bot.send_message(chat_id=VALID_USERS[0], text=message, parse_mode=telegram.ParseMode.HTML)
-    update.message.reply_text(text='Ups! Parece que algo no ha salido bien.\n '
-                                   'He enviado un mensaje al administrador con '
-                                   'detalles del error para que lo revise.')
+    update.effective_message.reply_text(text='Ups! Parece que algo no ha salido bien.\n '
+                                        'He enviado un mensaje al administrador con '
+                                        'detalles del error para que lo revise.')
+    return ConversationHandler.END
 
 
 @restricted
 @send_action(telegram.ChatAction.TYPING)
 def help(update, context):
-    # print('context.chat_data = {}'.format(context.chat_data))
     location_keyboard = telegram.KeyboardButton(text="Enviar mi ubicación actual", request_location=True)
-    reply_markup = telegram.ReplyKeyboardMarkup([[location_keyboard]])
-    update.message.reply_text(
-        text=f'⚠ Hola {update.message.from_user.first_name}, para poder darte '
+    reply_markup = telegram.ReplyKeyboardMarkup([[location_keyboard]], one_time_keyboard=True)
+    update.effective_message.reply_text(
+        text=f'⚠ Hola {update.effective_user.first_name}, para poder darte '
              'información de los cargadores que hay libres cerca de tu '
              'posición, por favor, *envíame tu ubicación* usando el botón de abajo\\.\n\n'
              'ℹ *CONSEJO* ℹ\n'
@@ -119,45 +118,38 @@ def help(update, context):
              'del camino que sigas hasta él\\.',
         parse_mode=telegram.ParseMode.MARKDOWN_V2,
         reply_markup=reply_markup)
+    return RADIUS
 
 
 @restricted
 @send_action(telegram.ChatAction.TYPING)
 def location(update, context):
-    free_stations = _free_stations_in_range(update.message.location, DEFAULT_RADIUS)
     context.chat_data['location'] = json.dumps({
-        'latitude': str(update.message.location.latitude),
-        'longitude': str(update.message.location.longitude)
+        'latitude': str(update.effective_message.location.latitude),
+        'longitude': str(update.effective_message.location.longitude)
     })
-    # Si hay estaciones de carga dentro del rádio
-    if len(free_stations) > 0:
-        message = _free_stations_response(free_stations, DEFAULT_RADIUS)
-        update.message.reply_text(
-            parse_mode=telegram.ParseMode.MARKDOWN_V2,
-            disable_web_page_preview=True,
-            text=message)
-    # Si no se han encontrado estaciones de carga libres dentro del rádio
-    else:
-        # Prepara la respuesta con las opciones
-        message = f'💩 No he encontrado cargadores libres en {DEFAULT_RADIUS} metros'
-        update.message.reply_text(message)
-        message = 'Podemos volver a probar ampliando el rádio de búsqueda a:'
-        keyboard = [
-            [
-                telegram.InlineKeyboardButton('1 Km', callback_data='1000'),
-                telegram.InlineKeyboardButton('1,5 Km', callback_data='1500'),
-                telegram.InlineKeyboardButton('2 Km', callback_data='2000')
-            ],
-            [telegram.InlineKeyboardButton("No amplies el rádio de búsqueda", callback_data='0')]
-        ]
-        reply_markup = telegram.InlineKeyboardMarkup(keyboard)
-        update.message.reply_text(message, reply_markup=reply_markup)
+    message = '¿Qué rádio de búsqueda quieres usar?'
+    keyboard = [
+        [
+            telegram.InlineKeyboardButton('500 m', callback_data='500'),
+            telegram.InlineKeyboardButton('1 Km', callback_data='1000'),
+            telegram.InlineKeyboardButton('2 Km', callback_data='2000')
+        ],
+        [
+            telegram.InlineKeyboardButton('3 Km', callback_data='3000'),
+            telegram.InlineKeyboardButton('5 Km', callback_data='5000'),
+            telegram.InlineKeyboardButton('7 Km', callback_data='7000'),
+        ],
+        # [telegram.InlineKeyboardButton("Cargador libre más cercano", callback_data='0')]
+    ]
+    reply_markup = telegram.InlineKeyboardMarkup(keyboard)
+    update.effective_message.reply_text(message, reply_markup=reply_markup)
+    return UPDATE_RADIUS
 
 
 @restricted
 @send_action(telegram.ChatAction.TYPING)
 def callback(update, context):
-    # print('callback - context.chat_data = {}'.format(context.chat_data))
     radius = int(update.callback_query.data)
     if radius > 0:
         message = ''
@@ -170,8 +162,8 @@ def callback(update, context):
                 message = _free_stations_response(free_stations, radius)
             # Si no se han encontrado estaciones de carga libres dentro del rádio
             else:
-                message = f'💩 ¡Vaya\\! Pues ni ampliando el rádio de búsqueda a {radius} metros ' \
-                    'he encontrado cargadores libres, comparte otra ubicación y vuelve a probar\\.'
+                message = f'💩 ¡Vaya\\! No he encontrado un cargador libre en {radius} metros, ' \
+                    'comparte otra ubicación y vuelve a probar\\.'
             update.callback_query.answer()
             update.callback_query.edit_message_text(parse_mode=telegram.ParseMode.MARKDOWN_V2,
                                                     disable_web_page_preview=True,
@@ -179,37 +171,21 @@ def callback(update, context):
         except KeyError:
             print('No he podido encontrar la localización en chat_data: {}'.format(context.chat_data))
             update.callback_query.answer()
-            update.callback_query.edit_message_text(text='Ups! No he podido ampliar el rádio de búsqueda, '
+            update.callback_query.edit_message_text(text='Ups! No he podido realizar la búsqueda, '
                                                     'comparte otra ubicación y vuelve a probar.')
-    # Si no quiere ampliar el rádio
+    # Si quiere buscar la estación libre más cercana
     else:
         update.callback_query.answer()
         update.callback_query.edit_message_text(f'Vale {update.callback_query.from_user.first_name}, '
-                                                'tú mandas, no amplio el rádio de búsqueda.')
+                                                'tú mandas, estación libre más cercana.')
+    return ConversationHandler.END
 
 
-bot = telegram.Bot(token=os.environ.get('TELEGRAM_TOKEN', '0000:yyyy'))
-dispatcher = Dispatcher(bot=bot,
-                        update_queue=None,
-                        workers=0,
-                        use_context=True)
-dispatcher.add_error_handler(error_callback)
-# Para procesar cualquier texto
-dispatcher.add_handler(MessageHandler(Filters.text, help))
-dispatcher.add_handler(MessageHandler(Filters.location, location))
-dispatcher.add_handler(CallbackQueryHandler(callback))
-
-
-def webhook(request):
-    # print(request.get_json(force=True))
-    if _autheticate(request):
-        if request.method == "POST":
-            update = telegram.Update.de_json(request.get_json(force=True), bot)
-            dispatcher.process_update(update)
-        return "ok"
-    else:
-        # Si no se ha podido verificar el token
-        abort(403)
+def cancel(update, context):
+    update.effective_message.reply_text(
+        'Adiós, hablamos cuando quieras.',
+        reply_markup=telegram.ReplyKeyboardRemove())
+    return ConversationHandler.END
 
 
 def _autheticate(request):
@@ -331,3 +307,34 @@ def _escape_data(s):
             .replace('}', '\\}') \
             .replace('.', '\\.') \
             .replace('!', '\\!')
+
+
+################################################################################
+
+bot = telegram.Bot(token=os.environ.get('TELEGRAM_TOKEN', '0000:yyyy'))
+dispatcher = Dispatcher(bot=bot,
+                        update_queue=None,
+                        workers=0,
+                        use_context=True)
+conv_handler = ConversationHandler(
+    entry_points=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, location)],
+    states={
+        RADIUS: [MessageHandler(Filters.location, location)],
+        UPDATE_RADIUS: [CallbackQueryHandler(callback)],
+    },
+    fallbacks=[CommandHandler('cancel', cancel)],
+)
+dispatcher.add_error_handler(error_callback)
+dispatcher.add_handler(conv_handler)
+
+
+def webhook(request):
+    # print(request.get_json(force=True))
+    if _autheticate(request):
+        if request.method == "POST":
+            update = telegram.Update.de_json(request.get_json(force=True), bot)
+            dispatcher.process_update(update)
+        return "ok"
+    else:
+        # Si no se ha podido verificar el token
+        abort(403)
