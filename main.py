@@ -59,7 +59,7 @@ def restricted(func):
                 parse_mode=telegram.ParseMode.MARKDOWN_V2)
             message = f'Hola soy {update.effective_user.first_name} {update.effective_user.last_name} ' \
                 f'y mi usuario de Telegram es:\n*{user_id}*\nPor favor dame de ' \
-                'alta en el sistema para que pueda acceder al bot.'
+                'alta en el sistema para que pueda acceder al bot\\.'
             context.bot.send_message(chat_id=VALID_USERS[0], text=message, parse_mode=telegram.ParseMode.MARKDOWN_V2)
             return
         return func(update, context, *args, **kwargs)
