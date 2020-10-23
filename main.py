@@ -169,7 +169,7 @@ def callback(update, context):
                 message = _free_chargers_response(free_chargers, radius)
             # Si no se han encontrado estaciones de carga libres dentro del rádio
             else:
-                message = f'💩 ¡Vaya\\! No he encontrado un cargador libre en {radius} metros, ' \
+                message = f'💩 ¡Vaya\\! No he encontrado ningún cargador libre en {radius} metros, ' \
                     'comparte otra ubicación y vuelve a probar\\.'
             update.callback_query.answer()
             update.callback_query.edit_message_text(parse_mode=telegram.ParseMode.MARKDOWN_V2,
@@ -280,22 +280,25 @@ def _free_chargers_response(chargers, radius):
         sorted_chargers = sorted(chargers.items(), key=lambda x: x[1])
         # Siempre hay que retornar al menos el cargador más cercano
         closest_charger = sorted_chargers.pop(0)
-        charger_data = _get_charger_data(closest_charger[0])
-        message_charger += _get_charger_text(charger_data, closest_charger[1])
-        # Si después de quitar el cargador más cercano todavía quedan libres
-        if len(sorted_chargers) > 0:
-            message_header = f'No he encontrado cargadores disponibles en {radius} metros, pero el más cercano es:\n\n'
+        closest_charger_data = _get_charger_data(closest_charger[0])
+        closest_charger_distance = closest_charger[1]
+        message_charger += _get_charger_text(closest_charger_data, closest_charger_distance)
+        # Si el cargador más cercano está fuera del radio
+        if closest_charger_distance > radius:
+            message_header = 'No he encontrado cargadores disponibles en ' \
+                f'{radius} metros, pero el más cercano es:\n\n'
+        else:
+            message_header = '🎉🎊 He encontrado los siguientes cargadores ' \
+                f'disponibles en {radius} metros:\n\n'
             for charger in sorted_chargers:
                 if charger[1] <= radius:
-                    message_header = '🎉🎊 He encontrado los siguientes cargadores ' \
-                        f'disponibles en {radius} metros:\n\n'
                     charger_data = _get_charger_data(charger[0])
                     message_charger += _get_charger_text(charger_data, charger[1])
                 else:
                     break
-            message = message_header + message_charger
+        message = message_header + message_charger
     else:
-        message = 'Algo muy gordo ha ocurrido porque no hay ningúncargador libre en las Baleares'
+        message = 'Algo muy gordo ha ocurrido porque no hay ningún cargador libre en las Baleares'
     # print(message)
     return message
 
