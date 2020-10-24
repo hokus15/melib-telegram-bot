@@ -12,6 +12,7 @@ from geopy import distance
 from functools import wraps
 from telegram.ext import (MessageHandler, CallbackQueryHandler, ConversationHandler,
                           CommandHandler, Dispatcher, Filters)
+from telegram.utils.helpers import escape_markdown
 
 CHARGER_BASE_URL = 'https://ws.consorcidetransports.com/produccio/ximelib-mobile/rest/devicegroups'
 
@@ -94,7 +95,7 @@ def error_callback(update, context):
         html.escape(tb),
     )
     # Corta el mensaje si es más largo de lo permitido
-    if len(message > 4096):
+    if len(message) > 4096:
         message = message[:4089] + '</pre>'
     # Envía el mensaje de error al administrador (ha de ser el primero de la lista de usuarios)
     context.bot.send_message(chat_id=VALID_USERS[0], text=message, parse_mode=telegram.ParseMode.HTML)
@@ -313,33 +314,9 @@ def _get_charger_text(charger, distance):
     message = f"🔌🆓 Cargador para *{PLACE_TYPE[charger['devices'][0]['placeType']]} " \
         f"{STATUS[charger['status']]}* a " \
         f"*{distance:0.0f}* metros en " \
-        f"[*{_escape_data(charger['address'])}*]" \
+        f"[*{escape_markdown(charger['address'], 2)}*]" \
         f"(https://www.google.com/maps/place/{charger['lat']},{charger['lng']})\n"
     return message
-
-
-def _escape_data(s):
-    '''
-    Telegram tiene ciertos caracteres reservados que hay que "escapar".
-    '''
-    return s.replace('_', '\\_') \
-            .replace('*', '\\*') \
-            .replace('[', '\\[') \
-            .replace(']', '\\]') \
-            .replace('(', '\\(') \
-            .replace(')', '\\)') \
-            .replace('~', '\\~') \
-            .replace('`', '\\`') \
-            .replace('>', '\\>') \
-            .replace('#', '\\#') \
-            .replace('+', '\\+') \
-            .replace('-', '\\-') \
-            .replace('=', '\\=') \
-            .replace('|', '\\|') \
-            .replace('{', '\\{') \
-            .replace('}', '\\}') \
-            .replace('.', '\\.') \
-            .replace('!', '\\!')
 
 
 ################################################################################
