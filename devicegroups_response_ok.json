@@ -1,0 +1,32 @@
+[
+    {
+        "id": 23,
+        "lat": 39.5893,
+        "lng": 2.6658,
+        "status": "AVAILABLE"
+    },
+    {
+        "id": 523,
+        "lat": 39.82071,
+        "lng": 2.884301,
+        "status": "AVAILABLE"
+    },
+    {
+        "id": 684,
+        "lat": 39.60221,
+        "lng": 3.381519,
+        "status": "AVAILABLE"
+    },
+    {
+        "id": 690,
+        "lat": 39.58486,
+        "lng": 2.640747,
+        "status": "AVAILABLE"
+    },
+    {
+        "id": 691,
+        "lat": 39.582253,
+        "lng": 2.648974,
+        "status": "OCCUPIED_PARTIAL"
+    }
+]
