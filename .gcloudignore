@@ -17,3 +17,4 @@ melib.png
 requirements-test.txt
 .travis.yml
 cloudbuild.yaml
+telethon_*.py
