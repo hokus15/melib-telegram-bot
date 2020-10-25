@@ -3,4 +3,4 @@ python-telegram-bot==13.0
 geopy==2.0.0
 requests==2.24.0
 aiounittest==1.4.0
-telethon=1.17.4
+telethon==1.17.4
