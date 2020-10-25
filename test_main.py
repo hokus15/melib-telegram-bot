@@ -31,7 +31,7 @@ class MelibTestCase(unittest.TestCase):
                     self.assertFalse(main._autheticate(r))
 
     def test_free_chargers_ok(self):
-        with open("devicegroups_response_ok.json") as f:
+        with open("test_devicegroups_response_ok.json") as f:
             with patch("main.requests.request") as mock_devicegroups:
                 mock_devicegroups.return_value.ok = True
                 mock_devicegroups.return_value.json.return_value = json.loads(f.read())
@@ -40,7 +40,7 @@ class MelibTestCase(unittest.TestCase):
                 self.assertEqual(len(response), 5)
 
     def test_free_chargers_bad_coordinates(self):
-        with open("devicegroups_response_bad_coordinates.json") as f:
+        with open("test_devicegroups_response_bad_coordinates.json") as f:
             with patch("main.requests.request") as mock_devicegroups:
                 mock_devicegroups.return_value.ok = True
                 mock_devicegroups.return_value.json.return_value = json.loads(f.read())
