@@ -11,7 +11,7 @@ from flask import abort
 from geopy import distance
 from functools import wraps
 from telegram.ext import (MessageHandler, CallbackQueryHandler, ConversationHandler,
-                          CommandHandler, Dispatcher, Filters)
+                          Dispatcher, Filters)
 from telegram.utils.helpers import escape_markdown
 
 CHARGER_BASE_URL = 'https://ws.consorcidetransports.com/produccio/ximelib-mobile/rest/devicegroups'
@@ -29,7 +29,8 @@ PLACE_TYPE = {
 
 STATUS = {
     'AVAILABLE': 'libre',
-    'OCCUPIED_PARTIAL': 'parcialmente ocupado'
+    'OCCUPIED_PARTIAL': 'parcialmente ocupado',
+    'UNAVAILABLE': 'no dispobible'  # Necesario para los tests
 }
 
 SEND_LOCATION_INSTRUCTIONS = 'ℹ *Para enviar una ubicación* ℹ \n' \
@@ -38,8 +39,6 @@ SEND_LOCATION_INSTRUCTIONS = 'ℹ *Para enviar una ubicación* ℹ \n' \
                              '3\\. Desplázate por el mapa hasta la ubicación que quieras\\.\n' \
                              '4\\. Elije `Enviar la ubicación seleccionada`\\.'
 
-# Si no encuentra la variable de entorno usa 1234567890 para los tests
-VALID_USERS = os.environ.get('VALID_USERS', '1234567890').split(';')
 
 # Estados de conversación
 RADIUS, UPDATE_RADIUS = range(2)
@@ -50,7 +49,7 @@ def restricted(func):
     @wraps(func)
     def wrapped(update, context, *args, **kwargs):
         user_id = str(update.effective_user.id)
-        if user_id not in VALID_USERS:
+        if user_id not in valid_users:
             update.effective_message.reply_text(
                 text=f'Hola {update.effective_user.first_name}, por '
                 'ahora, no puedes usar el bot, por favor, proporciona '
@@ -61,7 +60,7 @@ def restricted(func):
             message = f'Hola soy {update.effective_user.first_name} {update.effective_user.last_name} ' \
                 f'y mi usuario de Telegram es:\n*{user_id}*\nPor favor dame de ' \
                 'alta en el sistema para que pueda acceder al bot\\.'
-            context.bot.send_message(chat_id=VALID_USERS[0], text=message, parse_mode=telegram.ParseMode.MARKDOWN_V2)
+            context.bot.send_message(chat_id=valid_users[0], text=message, parse_mode=telegram.ParseMode.MARKDOWN_V2)
             return
         return func(update, context, *args, **kwargs)
     return wrapped
@@ -83,12 +82,15 @@ def error_callback(update, context):
     tb_list = traceback.format_exception(None, context.error, context.error.__traceback__)
     tb = ''.join(tb_list)
     message = (
-        'Excepción lanzada cuando se procesaba una actualización:\n'
+        'Excepción: {}\n'
+        'Mensaje: {}\n'
         '<pre>update = {}</pre>\n\n'
         '<pre>context.chat_data = {}</pre>\n\n'
         '<pre>context.user_data = {}</pre>\n\n'
         '<pre>{}</pre>'
     ).format(
+        html.escape(str(type(context.error))),
+        html.escape(str(context.error)),
         html.escape(json.dumps(update.to_dict(), indent=2, ensure_ascii=False)),
         html.escape(str(context.chat_data)),
         html.escape(str(context.user_data)),
@@ -98,15 +100,17 @@ def error_callback(update, context):
     if len(message) > 4096:
         message = message[:4089] + '</pre>'
     # Envía el mensaje de error al administrador (ha de ser el primero de la lista de usuarios)
-    context.bot.send_message(chat_id=VALID_USERS[0], text=message, parse_mode=telegram.ParseMode.HTML)
-    update.effective_message.reply_text(text='Ups! Parece que algo no ha salido bien.\n '
-                                        'He enviado un mensaje al administrador con '
-                                        'detalles del error para que lo revise.')
+    context.bot.send_message(chat_id=valid_users[0], text=message, parse_mode=telegram.ParseMode.HTML)
+    update.effective_message.reply_text(text='Ups\\! Parece que algo no ha salido bien\\.\n '
+                                             'He enviado un mensaje al administrador con '
+                                             'detalles del error para que lo revise\\.\n\n'
+                                             '*Error*: {}'.format(escape_markdown(str(context.error))),
+                                        parse_mode=telegram.ParseMode.MARKDOWN_V2)
     return ConversationHandler.END
 
 
-@restricted
-@send_action(telegram.ChatAction.TYPING)
+@ restricted
+@ send_action(telegram.ChatAction.TYPING)
 def help(update, context):
     location_keyboard = telegram.KeyboardButton(text="Enviar mi ubicación actual", request_location=True)
     reply_markup = telegram.ReplyKeyboardMarkup([[location_keyboard]], one_time_keyboard=True)
@@ -129,8 +133,8 @@ def help(update, context):
     return RADIUS
 
 
-@restricted
-@send_action(telegram.ChatAction.TYPING)
+@ restricted
+@ send_action(telegram.ChatAction.TYPING)
 def location(update, context):
     context.chat_data['location'] = json.dumps({
         'latitude': str(update.effective_message.location.latitude),
@@ -155,8 +159,8 @@ def location(update, context):
     return UPDATE_RADIUS
 
 
-@restricted
-@send_action(telegram.ChatAction.TYPING)
+@ restricted
+@ send_action(telegram.ChatAction.TYPING)
 def callback(update, context):
     radius = int(update.callback_query.data)
     if radius > 0:
@@ -186,13 +190,6 @@ def callback(update, context):
         update.callback_query.answer()
         update.callback_query.edit_message_text(f'Vale {update.callback_query.from_user.first_name}, '
                                                 'tú mandas, estación libre más cercana.')
-    return ConversationHandler.END
-
-
-def cancel(update, context):
-    update.effective_message.reply_text(
-        'Adiós, hablamos cuando quieras.',
-        reply_markup=telegram.ReplyKeyboardRemove())
     return ConversationHandler.END
 
 
@@ -319,27 +316,39 @@ def _get_charger_text(charger, distance):
     return message
 
 
+def _bot_setup():
+    global bot
+    global dispatcher
+    global valid_users
+    valid_users = os.environ.get('VALID_USERS', '').split(';')
+    bot = telegram.Bot(token=os.environ.get('TELEGRAM_TOKEN'))
+    dispatcher = Dispatcher(bot=bot,
+                            update_queue=None,
+                            workers=0,
+                            use_context=True)
+    conv_handler = ConversationHandler(
+        entry_points=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, location)],
+        states={
+            RADIUS: [MessageHandler(Filters.location, location)],
+            UPDATE_RADIUS: [CallbackQueryHandler(callback)],
+        },
+        fallbacks=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, location)]
+    )
+    dispatcher.add_error_handler(error_callback)
+    dispatcher.add_handler(conv_handler)
+
 ################################################################################
 
-bot = telegram.Bot(token=os.environ.get('TELEGRAM_TOKEN', '0000:yyyy'))
-dispatcher = Dispatcher(bot=bot,
-                        update_queue=None,
-                        workers=0,
-                        use_context=True)
-conv_handler = ConversationHandler(
-    entry_points=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, location)],
-    states={
-        RADIUS: [MessageHandler(Filters.location, location)],
-        UPDATE_RADIUS: [CallbackQueryHandler(callback)],
-    },
-    fallbacks=[CommandHandler('cancel', cancel)]
-)
-dispatcher.add_error_handler(error_callback)
-dispatcher.add_handler(conv_handler)
+
+bot = None
+dispatcher = None
+valid_users = []
 
 
 def webhook(request):
     # print(request.get_json(force=True))
+    if bot is None:
+        _bot_setup()
     if _autheticate(request):
         if request.method == "POST":
             update = telegram.Update.de_json(request.get_json(force=True), bot)

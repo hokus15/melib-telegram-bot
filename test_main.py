@@ -3,51 +3,14 @@ import telegram
 import json
 import flask
 import unittest
+import re
 from unittest.mock import patch
 
 
 app = flask.Flask(__name__)
 
 
-class ClientTestCase(unittest.TestCase):
-    #    def test_webhook_1_location(self):
-    #        with open("test_location.json") as f:
-    #            with patch.dict('os.environ', {'TELEGRAM_TOKEN': '0000:yyyy',
-    #                                           'WEBHOOK_TOKEN': 'qwertyuiop',
-    #                                           'VALID_USERS': '1234567890'}):
-    #                with patch.object(telegram.Bot, "send_message", return_value="test message"):
-    #                    with patch.object(telegram.Bot, "send_chat_action", return_value="test message"):
-    #                        with app.test_request_context('?token=qwertyuiop', method="POST", data=f):
-    #                            r = flask.request
-    #                            main.webhook(r)
-
-    #    def test_webhook_2_callback(self):
-    #        with open("test_callback.json") as f:
-    #            with patch.dict('os.environ', {'TELEGRAM_TOKEN': '0000:yyyy',
-    #                                           'WEBHOOK_TOKEN': 'qwertyuiop',
-    #                                           'VALID_USERS': '1234567890'}):
-    #                with patch.object(telegram.Bot, "answer_callback_query", return_value="test message"):
-    #                    with patch.object(telegram.Bot, "edit_message_text", return_value="test message"):
-    #                        with patch.object(telegram.Bot, "send_chat_action", return_value="test message"):
-    #                            with app.test_request_context('?token=qwertyuiop', method="POST", data=f):
-    #                                r = flask.request
-    #                                main.webhook(r)
-
-    #    def test_webhook_3_text(self):
-    #        with open("test_text.json") as f:
-    #            with patch.dict('os.environ', {'TELEGRAM_TOKEN': '0000:yyyy',
-    #                                           'WEBHOOK_TOKEN': 'qwertyuiop',
-    #                                           'VALID_USERS': '1234567890'}):
-    #                with patch.object(telegram.Bot, "send_message", return_value="test message"):
-    #                    with patch.object(telegram.Bot, "send_chat_action", return_value="test message"):
-    #                        with app.test_request_context('?token=qwertyuiop', method="POST", data=f):
-    #                            r = flask.request
-    #                            main.webhook(r)
-
-    #    def test_free_stations_in_range(self):
-    #        location = telegram.Location(2.703475, 39.685317)
-    #        radius = 100
-    #        main._free_stations_in_range(location, radius)
+class MelibTestCase(unittest.TestCase):
 
     def test_autheticate_true(self):
         with open("test_text.json") as f:
@@ -99,8 +62,8 @@ class ClientTestCase(unittest.TestCase):
         radius = 500
         response = main._free_chargers_response(chargers, radius)
         self.assertTrue(response.startswith('No he encontrado cargadores disponibles en 500 metros'))
-        self.assertTrue("Cargador para *coche libre* a *1000* metros" in response)
-        self.assertEqual(response.count("Cargador para *coche libre*"), 1)
+        self.assertTrue(re.search(r"Cargador para \*coche .*\* a \*1000\* metros.*", response, re.DOTALL))
+        self.assertEqual(response.count("Cargador para *coche "), 1)
 
     def test_free_chargers_response_one_charger_in_radius(self):
         chargers = {
@@ -109,8 +72,8 @@ class ClientTestCase(unittest.TestCase):
         radius = 500
         response = main._free_chargers_response(chargers, radius)
         self.assertTrue('He encontrado los siguientes cargadores' in response)
-        self.assertTrue("Cargador para *coche libre* a *400* metros" in response)
-        self.assertEqual(response.count("Cargador para *coche libre*"), 1)
+        self.assertTrue(re.search(r"Cargador para \*coche .*\* a \*400\* metros.*", response, re.DOTALL))
+        self.assertEqual(response.count("Cargador para *coche"), 1)
 
     def test_free_chargers_response_multiple_charger_in_radius(self):
         chargers = {
@@ -123,11 +86,14 @@ class ClientTestCase(unittest.TestCase):
         radius = 500
         response = main._free_chargers_response(chargers, radius)
         self.assertTrue('He encontrado los siguientes cargadores' in response)
-        self.assertTrue("Cargador para *coche libre* a *400* metros" in response)
-        self.assertTrue("Cargador para *coche libre* a *342* metros" in response)
-        self.assertTrue("Cargador para *coche libre* a *500* metros" in response)
-        self.assertEqual(response.count("Cargador para *coche libre*"), 3)
+        self.assertTrue(re.search(r".*Cargador para \*coche .*\* a \*400\* metros.*", response, re.DOTALL))
+        self.assertTrue(re.search(r".*Cargador para \*coche .*\* a \*342\* metros.*", response, re.DOTALL))
+        self.assertTrue(re.search(r".*Cargador para \*coche .*\* a \*500\* metros.*", response, re.DOTALL))
+        self.assertEqual(response.count("Cargador para *coche "), 3)
 
 
+# TODO cambiar los assert de los strings para que independientemente del estado  no falle el assert.
+# Usar expresiones regualares
+# self.assertTrue(search("Cargador para *coche ?????* a *400* metros" in response", response))
 if __name__ == "__main__":
     unittest.main()
