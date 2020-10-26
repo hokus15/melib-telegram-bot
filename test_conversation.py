@@ -3,11 +3,10 @@ from telethon.tl.custom.message import Message
 from telethon.sessions import StringSession
 import aiounittest
 import os
-import os.path
-from os import path
+
 
 # Evita que falle en travis-ci ya que allí no está el fichero .env
-if path.exists(".env"):
+if os.path.exists(".env"):
     from dotenv import load_dotenv
     load_dotenv()
 
