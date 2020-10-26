@@ -3,6 +3,8 @@ from telethon.tl.custom.message import Message
 from telethon.sessions import StringSession
 import aiounittest
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 api_id = int(os.environ['TELEGRAM_APP_ID'])
 api_hash = os.environ['TELEGRAM_APP_HASH']

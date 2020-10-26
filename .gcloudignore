@@ -6,15 +6,16 @@
 # For more information, run:
 #   $ gcloud topic gcloudignore
 #
+.tox/
 .gcloudignore
 .git
 .gitignore
-node_modules
-test*.*
+.env
+.travis.yml
 *.md
 tox.ini
 melib.png
-requirements-test.txt
-.travis.yml
 cloudbuild.yaml
+requirements-test.txt
 telethon_*.py
+test*.*
