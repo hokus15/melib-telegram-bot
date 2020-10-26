@@ -4,6 +4,13 @@ from telethon.sessions import StringSession
 import aiounittest
 import os
 
+
+# Evita que falle en travis-ci ya que allí no está el fichero .env
+if os.path.exists(".env"):
+    from dotenv import load_dotenv
+    load_dotenv()
+
+
 api_id = int(os.environ['TELEGRAM_APP_ID'])
 api_hash = os.environ['TELEGRAM_APP_HASH']
 session_str = os.environ['TELETHON_SESSION']
