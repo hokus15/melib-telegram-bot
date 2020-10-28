@@ -16,6 +16,8 @@ from telegram.utils.helpers import escape_markdown
 
 CHARGER_BASE_URL = 'https://ws.consorcidetransports.com/produccio/ximelib-mobile/rest/devicegroups'
 
+MAX_CHARGERS = 9
+
 HEADERS = {
     'content-type': "application/json",
     'accept-encoding': "gzip",
@@ -30,7 +32,8 @@ PLACE_TYPE = {
 STATUS = {
     'AVAILABLE': 'libre',
     'OCCUPIED_PARTIAL': 'parcialmente ocupado',
-    'UNAVAILABLE': 'no dispobible'  # Necesario para los tests
+    'UNAVAILABLE': 'no dispobible',  # Necesario para los tests
+    'OCCUPIED': 'ocupado'  # Necesario para los tests
 }
 
 SEND_LOCATION_INSTRUCTIONS = 'ℹ *Para enviar una ubicación* ℹ \n' \
@@ -123,6 +126,7 @@ def help(update, context):
              'de tu destino para saber los cargadores que hay libres cerca\\.\n\n'
              f'{SEND_LOCATION_INSTRUCTIONS}\n\n'
              '‼ *ATENCIÓN* ‼\n'
+             f'Te voy a devolver como máximo {MAX_CHARGERS} cargadores\\.\n\n'
              'La distancia la mido en *linea recta* entre la ubicación enviada '
              'y la ubicación del cargador\\. No tengo en cuenta la ruta '
              'ni la altura de ninguno de los dos puntos\\. Por lo que la '
@@ -163,6 +167,7 @@ def location(update, context):
 @ send_action(telegram.ChatAction.TYPING)
 def callback(update, context):
     radius = int(update.callback_query.data)
+    update.callback_query.answer('Estoy buscando cargadores...')
     if radius > 0:
         message = ''
         try:
@@ -171,23 +176,25 @@ def callback(update, context):
             free_chargers = _free_chargers(location)
             # Si hay estaciones de carga dentro del rádio
             if len(free_chargers) > 0:
-                message = _free_chargers_response(free_chargers, radius)
+                message = _free_chargers_response(free_chargers, radius, location)
             # Si no se han encontrado estaciones de carga libres dentro del rádio
             else:
                 message = f'💩 ¡Vaya\\! No he encontrado ningún cargador libre en {radius} metros, ' \
                     'comparte otra ubicación y vuelve a probar\\.'
-            update.callback_query.answer()
             update.callback_query.edit_message_text(parse_mode=telegram.ParseMode.MARKDOWN_V2,
                                                     disable_web_page_preview=True,
-                                                    text=message)
+                                                    text=f'Vale, busco cargadores en {radius} metros')
+            # update.callback_query.edit_message_reply_markup(telegram.InlineKeyboardMarkup([[]]))
+            context.bot.send_message(chat_id=update.effective_user.id,
+                                     parse_mode=telegram.ParseMode.MARKDOWN_V2,
+                                     disable_web_page_preview=False,
+                                     text=message)
         except KeyError:
             print('No he podido encontrar la ubicación en chat_data: {}'.format(context.chat_data))
-            update.callback_query.answer()
             update.callback_query.edit_message_text(text='Ups! No he podido realizar la búsqueda, '
                                                     'comparte otra ubicación y vuelve a probar.')
     # Si quiere buscar la estación libre más cercana
     else:
-        update.callback_query.answer()
         update.callback_query.edit_message_text(f'Vale {update.callback_query.from_user.first_name}, '
                                                 'tú mandas, estación libre más cercana.')
     return ConversationHandler.END
@@ -266,13 +273,14 @@ def _free_chargers(location):
     return chargers
 
 
-def _free_chargers_response(chargers, radius):
+def _free_chargers_response(chargers, radius, location):
     '''
     Prepara el texto de respuesta con las estaciones de carga libres dentro del rango.
     '''
     message = ''
     message_charger = ''
     message_header = ''
+    message_map_markers = ''
     if len(chargers) > 0:
         # Ordena las estaciones de carga por distancia
         sorted_chargers = sorted(chargers.items(), key=lambda x: x[1])
@@ -280,21 +288,30 @@ def _free_chargers_response(chargers, radius):
         closest_charger = sorted_chargers.pop(0)
         closest_charger_data = _get_charger_data(closest_charger[0])
         closest_charger_distance = closest_charger[1]
-        message_charger += _get_charger_text(closest_charger_data, closest_charger_distance)
+        message_charger += f'⚡ 1\\. {_get_charger_text(closest_charger_data, closest_charger_distance)}'
+        message_map_markers += f'markers=color:red%7C{location.latitude},{location.longitude}&'
+        message_map_markers += f'markers=color:blue%7Clabel:1%7C{closest_charger_data["lat"]},' \
+                               f'{closest_charger_data["lng"]}&'
         # Si el cargador más cercano está fuera del radio
         if closest_charger_distance > radius:
-            message_header = 'No he encontrado cargadores disponibles en ' \
-                f'{radius} metros, pero el más cercano es:\n\n'
+            message_header = '🤬 No he encontrado cargadores disponibles en ' \
+                             f'{radius} metros, pero el más cercano es:\n\n'
         else:
-            message_header = '🎉🎊 He encontrado los siguientes cargadores ' \
-                f'disponibles en {radius} metros:\n\n'
+            message_header = '😁 He encontrado los siguientes cargadores ' \
+                             f'disponibles en {radius} metros:\n\n'
+            pos = 2
             for charger in sorted_chargers:
-                if charger[1] <= radius:
+                if charger[1] <= radius and pos <= MAX_CHARGERS:
                     charger_data = _get_charger_data(charger[0])
-                    message_charger += _get_charger_text(charger_data, charger[1])
+                    message_map_markers += f'markers=color:blue%7Clabel:{pos}%7C' \
+                                           f'{charger_data["lat"]},{charger_data["lng"]}&'
+                    message_charger += f'⚡ {pos}\\. {_get_charger_text(charger_data, charger[1])}'
+                    pos += 1
                 else:
                     break
-        message = message_header + message_charger
+        static_map = f'https://maps.googleapis.com/maps/api/staticmap?center={location.latitude},{location.longitude}' \
+            f'&size=300x300&maptype=roadmap&{message_map_markers}key={os.environ.get("GOOGLE_MAPS_APIKEY")}'
+        message = f'[🧐]({static_map}){message_header}{message_charger}'
     else:
         message = 'Algo muy gordo ha ocurrido porque no hay ningún cargador libre en las Baleares'
     # print(message)
@@ -308,7 +325,7 @@ def _get_charger_data(id):
 
 
 def _get_charger_text(charger, distance):
-    message = f"🔌🆓 Cargador para *{PLACE_TYPE[charger['devices'][0]['placeType']]} " \
+    message = f"Cargador para *{PLACE_TYPE[charger['devices'][0]['placeType']]} " \
         f"{STATUS[charger['status']]}* a " \
         f"*{distance:0.0f}* metros en " \
         f"[*{escape_markdown(charger['address'], 2)}*]" \
@@ -320,6 +337,7 @@ def _bot_setup():
     global bot
     global dispatcher
     global valid_users
+    global google_maps_apikey
     valid_users = os.environ.get('VALID_USERS', '').split(';')
     bot = telegram.Bot(token=os.environ.get('TELEGRAM_TOKEN'))
     dispatcher = Dispatcher(bot=bot,
