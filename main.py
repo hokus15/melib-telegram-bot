@@ -336,7 +336,6 @@ def _bot_setup():
     global bot
     global dispatcher
     global valid_users
-    global google_maps_apikey
     valid_users = os.environ.get('VALID_USERS', '').split(';')
     bot = telegram.Bot(token=os.environ.get('TELEGRAM_TOKEN'))
     dispatcher = Dispatcher(bot=bot,
