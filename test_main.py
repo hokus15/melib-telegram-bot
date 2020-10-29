@@ -4,7 +4,14 @@ import json
 import flask
 import unittest
 import re
+import os
 from unittest.mock import patch
+
+
+# Evita que falle en travis-ci ya que allí no está el fichero .env
+if os.path.exists(".env"):
+    from dotenv import load_dotenv
+    load_dotenv()
 
 
 app = flask.Flask(__name__)
@@ -52,7 +59,8 @@ class MelibTestCase(unittest.TestCase):
     def test_free_chargers_response_no_chargers(self):
         chargers = {}
         radius = 500
-        response = main._free_chargers_response(chargers, radius)
+        location = telegram.Location(2.654223, 39.575416)
+        response = main._free_chargers_response(chargers, radius, location)
         self.assertTrue(response.startswith('Algo muy gordo ha ocurrido'))
 
     def test_free_chargers_response_one_charger_available_not_in_radius(self):
@@ -60,8 +68,9 @@ class MelibTestCase(unittest.TestCase):
             23: 1000
         }
         radius = 500
-        response = main._free_chargers_response(chargers, radius)
-        self.assertTrue(response.startswith('No he encontrado cargadores disponibles en 500 metros'))
+        location = telegram.Location(2.654223, 39.575416)
+        response = main._free_chargers_response(chargers, radius, location)
+        self.assertTrue("No he encontrado cargadores disponibles en 500 metros" in response)
         self.assertTrue(re.search(r"Cargador para \*coche .*\* a \*1000\* metros.*", response, re.DOTALL))
         self.assertEqual(response.count("Cargador para *coche "), 1)
 
@@ -70,7 +79,8 @@ class MelibTestCase(unittest.TestCase):
             23: 400
         }
         radius = 500
-        response = main._free_chargers_response(chargers, radius)
+        location = telegram.Location(2.654223, 39.575416)
+        response = main._free_chargers_response(chargers, radius, location)
         self.assertTrue('He encontrado los siguientes cargadores' in response)
         self.assertTrue(re.search(r"Cargador para \*coche .*\* a \*400\* metros.*", response, re.DOTALL))
         self.assertEqual(response.count("Cargador para *coche"), 1)
@@ -84,16 +94,10 @@ class MelibTestCase(unittest.TestCase):
             691: 501
         }
         radius = 500
-        response = main._free_chargers_response(chargers, radius)
+        location = telegram.Location(2.654223, 39.575416)
+        response = main._free_chargers_response(chargers, radius, location)
         self.assertTrue('He encontrado los siguientes cargadores' in response)
         self.assertTrue(re.search(r".*Cargador para \*coche .*\* a \*400\* metros.*", response, re.DOTALL))
         self.assertTrue(re.search(r".*Cargador para \*coche .*\* a \*342\* metros.*", response, re.DOTALL))
         self.assertTrue(re.search(r".*Cargador para \*coche .*\* a \*500\* metros.*", response, re.DOTALL))
         self.assertEqual(response.count("Cargador para *coche "), 3)
-
-
-# TODO cambiar los assert de los strings para que independientemente del estado  no falle el assert.
-# Usar expresiones regualares
-# self.assertTrue(search("Cargador para *coche ?????* a *400* metros" in response", response))
-if __name__ == "__main__":
-    unittest.main()

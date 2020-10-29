@@ -61,7 +61,8 @@ class ConversationTestCase(aiounittest.AsyncTestCase):
             print('User > Click en [{}]\n'.format(radius))
             await resp.click(text=radius)
             # Bot < List of free chargers
-            resp = await conv.get_edit()
+            # resp = await conv.get_edit()
+            resp = await conv.get_response()
 #            print('Bot < {}\n\n'.format(resp.raw_text))
             self.assertTrue(
                 'No he encontrado cargadores disponibles en 500 metros, pero el más cercano es:' in resp.raw_text)
@@ -113,7 +114,8 @@ class ConversationTestCase(aiounittest.AsyncTestCase):
             print('User > Click en [{}]\n'.format(radius))
             await resp.click(text=radius)
             # Bot < List of free chargers
-            resp = await conv.get_edit()
+            # resp = await conv.get_edit()
+            resp = await conv.get_response()
             print('Bot < {}\n\n'.format(resp.raw_text))
 #            self.assertTrue(
 #                'No he encontrado cargadores disponibles en 500 metros, pero el más cercano es:' in resp.raw_text)

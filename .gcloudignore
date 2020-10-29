@@ -12,6 +12,8 @@
 .gitignore
 .env
 .travis.yml
+.pytest_cache/
+*.json
 *.md
 tox.ini
 melib.png
