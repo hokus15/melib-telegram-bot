@@ -9,14 +9,6 @@ La información que muestra es la misma que puedes obtener desde la web oficial 
 
 El bot está desarrollado en Python 3.8 y desplegado en Google Cloud Platform usando Cloud Functions.
 
-PR para mejorar la funcionalidad, la estructura o la legibilidad del código son bienvenidas.
+PRs para mejorar la funcionalidad, la estructura o la legibilidad del código son bienvenidas.
 
-## Cómo instalar el bot en tu cuenta de google cloud.
-TODO completar
-1. Despliega la función usando [Google Cloud Functions](https://cloud.google.com/functions/):
-    1. Crea un proyecto de [Google Cloud Platform](https://cloud.google.com)
-    1. Instala [gcloud command line utility](https://cloud.google.com/sdk/downloads).
-    1. Despliega usando el siguiente comando: `$ gcloud functions deploy webhook --trigger-http` TODO pendiente de completar el comando
-    1. Anota la URL 
-1. Crea un [bot de telegram](https://core.telegram.org/bots#3-how-do-i-create-a-bot)
-1. Asignar el webHook
+Puedes acceder al bot usando este enlace [@Melib_bot](https://t.me/Melib_bot). 
