@@ -306,8 +306,10 @@ def _free_chargers_response(chargers, radius, location):
                     pos += 1
                 else:
                     break
-        static_map = f'https://static-maps.yandex.ru/1.x/?lang=es_ES&l=map&ll={location.longitude},{location.latitude}' \
-                     f'&size=300,300&pt={location.longitude},{location.latitude},pm2rdl{message_map_markers}'
+        static_map = 'https://static-maps.yandex.ru/1.x/?lang=es_ES&l=map&ll=' \
+                     f'{location.longitude},{location.latitude}' \
+                     f'&size=300,300&pt={location.longitude},{location.latitude},' \
+                     f'pm2rdl{message_map_markers}'
         message = f'[🧐]({static_map}){message_header}{message_charger}'
     else:
         message = 'Algo muy gordo ha ocurrido porque no hay ningún cargador libre en las Baleares'
