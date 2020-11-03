@@ -13,6 +13,7 @@ from functools import wraps
 from telegram.ext import (MessageHandler, CallbackQueryHandler, ConversationHandler,
                           Dispatcher, Filters)
 from telegram.utils.helpers import escape_markdown
+from version import __version__
 
 
 CHARGER_BASE_URL = 'https://ws.consorcidetransports.com/produccio/ximelib-mobile/rest/devicegroups'
@@ -132,7 +133,8 @@ def help(update, context):
              'y la ubicación del cargador\\. No tengo en cuenta la ruta '
              'ni la altura de ninguno de los dos puntos\\. Por lo que la '
              'distancia para llegar al cargador puede variar dependiendo '
-             'del camino que sigas hasta él\\.',
+             'del camino que sigas hasta él\\.\n\n'
+             f'`v{escape_markdown(__version__)}`',
         parse_mode=telegram.ParseMode.MARKDOWN_V2,
         reply_markup=reply_markup)
     return RADIUS
