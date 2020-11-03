@@ -13,8 +13,11 @@
 .env
 .travis.yml
 .pytest_cache/
+.cz.toml
+.pre-commit-config.yaml
 *.json
 *.md
+*.cfg
 tox.ini
 melib.png
 cloudbuild.yaml
