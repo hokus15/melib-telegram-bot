@@ -14,6 +14,8 @@ from telegram.ext import (MessageHandler, CallbackQueryHandler, ConversationHand
                           Dispatcher, Filters)
 from telegram.utils.helpers import escape_markdown
 
+__VERSION__ = '0.1.0'
+
 CHARGER_BASE_URL = 'https://ws.consorcidetransports.com/produccio/ximelib-mobile/rest/devicegroups'
 
 MAX_CHARGERS = 9

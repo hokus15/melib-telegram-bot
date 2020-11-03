@@ -8,3 +8,8 @@ install:
 script:
   - python -m flake8
   - python -m unittest
+after_success:
+  - git config --global user.name "semantic-release (via TravisCI)"
+  - git config --global user.email "semantic-release@travis"
+  - pip install python-semantic-release
+  - semantic-release publish
