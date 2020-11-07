@@ -39,18 +39,16 @@ class MelibTestCase(unittest.TestCase):
 
     def test_free_chargers_ok(self):
         with open("test_devicegroups_response_ok.json") as f:
-            with patch("main.requests.request") as mock_devicegroups:
-                mock_devicegroups.return_value.ok = True
-                mock_devicegroups.return_value.json.return_value = json.loads(f.read())
+            with patch("melib.melib.device_groups") as mock_devicegroups:
+                mock_devicegroups.return_value = json.loads(f.read())
                 location = telegram.Location(2.4916501, 39.3892373)
                 response = main._free_chargers(location)
                 self.assertEqual(len(response), 5)
 
     def test_free_chargers_bad_coordinates(self):
         with open("test_devicegroups_response_bad_coordinates.json") as f:
-            with patch("main.requests.request") as mock_devicegroups:
-                mock_devicegroups.return_value.ok = True
-                mock_devicegroups.return_value.json.return_value = json.loads(f.read())
+            with patch("melib.melib.device_groups") as mock_devicegroups:
+                mock_devicegroups.return_value = json.loads(f.read())
                 location = telegram.Location(2.4916501, 39.3892373)
                 response = main._free_chargers(location)
                 self.assertEqual(len(response), 4)

@@ -3,28 +3,20 @@
 
 import os
 import telegram
-import requests
 import json
 import html
 import traceback
 from flask import abort
 from geopy import distance
 from functools import wraps
+from melib import melib
 from telegram.ext import (MessageHandler, CallbackQueryHandler, ConversationHandler,
                           Dispatcher, Filters)
 from telegram.utils.helpers import escape_markdown
 from version import __version__
 
 
-CHARGER_BASE_URL = 'https://ws.consorcidetransports.com/produccio/ximelib-mobile/rest/devicegroups'
-
 MAX_CHARGERS = 9
-
-HEADERS = {
-    'content-type': "application/json",
-    'accept-encoding': "gzip",
-    'cache-control': "no-cache",
-}
 
 PLACE_TYPE = {
     'CAR': 'coche',
@@ -217,35 +209,21 @@ def _autheticate(request):
 
 def _free_chargers(location):
     '''
-    Devuelve una lista de los cargadores libres o parcialmente ocupados junto
-    con la distancia en metros a la ubiacación proporcionada.
+    Devuelve un dict de los cargadores libres o parcialmente ocupados junto
+    con la distancia en metros a la ubicación proporcionada.
+
+    La clave del dict es el identificador del cargador y el valor es la distancia
+    en metros desde la ubitcación proporcionada.
+    Ejemplo:
+    {
+        23: 400,
+        523: 342,
+        684: 1203,
+        690: 500,
+        691: 501
+    }
     '''
 
-    # Se puede filtrar por los siguentes conceptos:
-    # placeType: Tipo de plaza.
-    # Posibles valores:
-    #   CAR: Coche
-    #   MOTORCYCLE: Moto
-
-    # idComponentType: Tipo Conector
-    # Se puede obtener una lista de cargadores válidos usando la siguiente
-    # petición GET : https://ws.consorcidetransports.com/produccio/ximelib-mobile/rest/devicecomponenttypes
-    # Posibles valores:
-    #   1: Mennekes
-    #   2: Shuko
-    #   3: CSSCombo
-    #   4: CHAdeMo
-
-    # chargeType: Tipo carga Posibles valores:
-    #   CHARGE_MODE_2: Lenta
-    #   CHARGE_MODE_3: Semi-rápida
-    #   CHARGE_MODE_4: Rápida
-
-    # onlyAvailable: Mostrar sólo disponibles. true/false
-
-    # includeOffline:Mostrar no gestionados. true/false
-
-    # bounds:No he podido averiguar para que sirve
     payload = {
         "bounds": None,
         "idComponentType": None,
@@ -254,13 +232,8 @@ def _free_chargers(location):
         "chargeType": None,
         "placeType": None
     }
-    # Envía la petición
-    response = requests.request(
-        "POST",
-        CHARGER_BASE_URL,
-        data=json.dumps(payload),
-        headers=HEADERS)
-    all_chargers_json_data = response.json()
+
+    all_chargers_json_data = melib.device_groups(payload)
     latlong = (location.latitude, location.longitude)
     chargers = {}
     for value in all_chargers_json_data:
@@ -289,7 +262,7 @@ def _free_chargers_response(chargers, radius, location):
         sorted_chargers = sorted(chargers.items(), key=lambda x: x[1])
         # Siempre hay que retornar al menos el cargador más cercano
         closest_charger = sorted_chargers.pop(0)
-        closest_charger_data = _get_charger_data(closest_charger[0])
+        closest_charger_data = melib.device_groups_by_id(closest_charger[0])
         closest_charger_distance = closest_charger[1]
         message_charger += f'⚡ 1\\. {_get_charger_text(closest_charger_data, closest_charger_distance)}'
         message_map_markers += f'~{closest_charger_data["lng"]},{closest_charger_data["lat"]},pm2bll1'
@@ -303,7 +276,7 @@ def _free_chargers_response(chargers, radius, location):
             pos = 2
             for charger in sorted_chargers:
                 if charger[1] <= radius and pos <= MAX_CHARGERS:
-                    charger_data = _get_charger_data(charger[0])
+                    charger_data = melib.device_groups_by_id(charger[0])
                     message_map_markers += f'~{charger_data["lng"]},{charger_data["lat"]},pm2bll{pos}'
                     message_charger += f'⚡ {pos}\\. {_get_charger_text(charger_data, charger[1])}'
                     pos += 1
@@ -318,12 +291,6 @@ def _free_chargers_response(chargers, radius, location):
         message = 'Algo muy gordo ha ocurrido porque no hay ningún cargador libre en las Baleares'
     # print(message)
     return message
-
-
-def _get_charger_data(id):
-    charger_status_url = f'{CHARGER_BASE_URL}/{id}'
-    response = requests.request("GET", charger_status_url, headers=HEADERS)
-    return response.json()
 
 
 def _get_charger_text(charger, distance):
