@@ -14,6 +14,7 @@ _HEADERS = {
 def device_groups(payload):
     '''
     Devuelve una lista de los cargadores solicitados con su posición, estado e id.
+
     Se puede filtrar por los siguentes conceptos:
      placeType: Tipo de plaza.
      Posibles valores:
@@ -48,11 +49,11 @@ def device_groups(payload):
     return response.json()
 
 
-def device_groups_by_id(id):
+def device_groups_by_id(device_group_id):
     '''
     Devuelve el estado del cargador especificado.
     '''
-    response = requests.request("GET", f"{_RESOURCE}devicegroups/{id}", headers=_HEADERS)
+    response = requests.request("GET", f"{_RESOURCE}devicegroups/{device_group_id}", headers=_HEADERS)
     return response.json()
 
 
