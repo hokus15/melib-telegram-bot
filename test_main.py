@@ -38,10 +38,11 @@ class MelibTestCase(unittest.TestCase):
                                            'WEBHOOK_TOKEN': 'qwertyuiop',
                                            'VALID_USERS': '1234567890'}):
                 with patch.object(Bot, "send_message", return_value="test message"):
-                    with app.test_request_context('?token=qwertyuiop', method="POST", data=f):
-                        rq = flask.request
-                        rs = main.webhook(rq)
-                        self.assertEqual("ok", rs)
+                    with patch.object(Bot, "send_chat_action", return_value="test action"):
+                        with app.test_request_context('?token=qwertyuiop', method="POST", data=f):
+                            rq = flask.request
+                            rs = main.webhook(rq)
+                            self.assertEqual("ok", rs)
 
     def test_autheticate_true(self):
         with open("test_text.json") as f:
