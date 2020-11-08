@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.1 (2020-11-08)
+### Fix
+* Arrgelos de estilo de código ([`3cac2d1`](https://github.com/hokus15/melib-telegram-bot/commit/3cac2d136c8d3ad1f22e07fa90c6dbae8f5bc247))
+* Corrige warning lanzado en los test unitarios ([`3b7e3ec`](https://github.com/hokus15/melib-telegram-bot/commit/3b7e3ec5959729c236a34ae93a5404e27462a5f8))
+
 ## v0.4.0 (2020-11-03)
 ### Feature
 * Incluida versión del bot en el mensaje de bienvenida ([`ab53a22`](https://github.com/hokus15/melib-telegram-bot/commit/ab53a22dff809fadb566b31a47291a181dbf70a1))
