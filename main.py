@@ -213,7 +213,7 @@ def _free_chargers(location):
     con la distancia en metros a la ubicación proporcionada.
 
     La clave del dict es el identificador del cargador y el valor es la distancia
-    en metros desde la ubitcación proporcionada.
+    en metros desde la ubicación proporcionada.
     Ejemplo:
     {
         23: 400,
