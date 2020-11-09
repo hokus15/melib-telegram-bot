@@ -16,10 +16,16 @@ valid_users = []
 
 @app.route('/{}'.format(WEBHOOK_TOKEN), methods=['POST'])
 def respond():
+    print(request.get_json(force=True))
     if bot is None:
         telebot.bot_setup()
     update = telegram.Update.de_json(request.get_json(force=True), bot)
     dispatcher.process_update(update)
+    return __version__
+
+
+@app.route('/', methods=['GET'])
+def version():
     return __version__
 
 
