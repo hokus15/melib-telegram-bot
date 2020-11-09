@@ -9,18 +9,14 @@ app = Flask(__name__)
 WEBHOOK_TOKEN = os.environ['WEBHOOK_TOKEN']
 print(WEBHOOK_TOKEN)
 
-bot = None
-dispatcher = None
-valid_users = []
-
 
 @app.route('/{}'.format(WEBHOOK_TOKEN), methods=['POST'])
 def respond():
     print(request.get_json(force=True))
-    if bot is None:
+    if telebot.bot is None:
         telebot.bot_setup()
-    update = telegram.Update.de_json(request.get_json(force=True), bot)
-    dispatcher.process_update(update)
+    update = telegram.Update.de_json(request.get_json(force=True), telebot.bot)
+    telebot.dispatcher.process_update(update)
     return __version__
 
 

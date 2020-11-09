@@ -12,6 +12,11 @@ from telegram.ext import (MessageHandler, CallbackQueryHandler, ConversationHand
 from telegram.utils.helpers import escape_markdown
 
 
+bot = None
+dispatcher = None
+valid_users = []
+
+
 MAX_CHARGERS = 9
 
 PLACE_TYPE = {
