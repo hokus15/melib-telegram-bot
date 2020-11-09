@@ -7,7 +7,7 @@ from melibbot.version import __version__
 app = Flask(__name__)
 
 WEBHOOK_TOKEN = os.environ['WEBHOOK_TOKEN']
-
+print(WEBHOOK_TOKEN)
 
 bot = None
 dispatcher = None
