@@ -6,7 +6,7 @@ import traceback
 from geopy import distance
 from functools import wraps
 from melibbot import melib
-from version import __version__
+from melibbot.version import __version__
 from telegram.ext import (MessageHandler, CallbackQueryHandler, ConversationHandler,
                           Dispatcher, Filters)
 from telegram.utils.helpers import escape_markdown
