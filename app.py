@@ -1,7 +1,8 @@
+# Fichero usado en heroku
 import os
 import telegram
 from flask import Flask, request
-from melibbot import telebot
+from melibbot import melibbot
 from melibbot.version import __version__
 
 app = Flask(__name__)
@@ -13,10 +14,10 @@ print(WEBHOOK_TOKEN)
 @app.route('/{}'.format(WEBHOOK_TOKEN), methods=['POST'])
 def respond():
     print(request.get_json(force=True))
-    if telebot.bot is None:
-        telebot.bot_setup()
-    update = telegram.Update.de_json(request.get_json(force=True), telebot.bot)
-    telebot.dispatcher.process_update(update)
+    if melibbot.bot is None:
+        melibbot.bot_setup()
+    update = telegram.Update.de_json(request.get_json(force=True), melibbot.bot)
+    melibbot.dispatcher.process_update(update)
     return __version__
 
 

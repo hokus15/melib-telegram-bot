@@ -169,10 +169,10 @@ def callback(update, context):
         try:
             chat_location = json.loads(context.chat_data['location'])
             location = telegram.Location(float(chat_location['longitude']), float(chat_location['latitude']))
-            free_chargers = _free_chargers(location)
+            available_chargers = free_chargers(location)
             # Si hay estaciones de carga dentro del rádio
-            if len(free_chargers) > 0:
-                message = _free_chargers_response(free_chargers, radius, location)
+            if len(available_chargers) > 0:
+                message = free_chargers_response(available_chargers, radius, location)
             # Si no se han encontrado estaciones de carga libres dentro del rádio
             else:
                 message = f'💩 ¡Vaya\\! No he encontrado ningún cargador libre en {radius} metros, ' \
@@ -196,7 +196,7 @@ def callback(update, context):
     return ConversationHandler.END
 
 
-def _free_chargers(location):
+def free_chargers(location):
     '''
     Devuelve un dict de los cargadores libres o parcialmente ocupados junto
     con la distancia en metros a la ubicación proporcionada.
@@ -238,7 +238,7 @@ def _free_chargers(location):
     return chargers
 
 
-def _free_chargers_response(chargers, radius, location):
+def free_chargers_response(chargers, radius, location):
     '''
     Prepara el texto de respuesta con las estaciones de carga libres dentro del rango.
     '''
@@ -253,7 +253,7 @@ def _free_chargers_response(chargers, radius, location):
         closest_charger = sorted_chargers.pop(0)
         closest_charger_data = melib.device_groups_by_id(closest_charger[0])
         closest_charger_distance = closest_charger[1]
-        message_charger += f'⚡ 1\\. {_get_charger_text(closest_charger_data, closest_charger_distance)}'
+        message_charger += f'⚡ 1\\. {get_charger_text(closest_charger_data, closest_charger_distance)}'
         message_map_markers += f'~{closest_charger_data["lng"]},{closest_charger_data["lat"]},pm2bll1'
         # Si el cargador más cercano está fuera del radio
         if closest_charger_distance > radius:
@@ -267,7 +267,7 @@ def _free_chargers_response(chargers, radius, location):
                 if charger[1] <= radius and pos <= MAX_CHARGERS:
                     charger_data = melib.device_groups_by_id(charger[0])
                     message_map_markers += f'~{charger_data["lng"]},{charger_data["lat"]},pm2bll{pos}'
-                    message_charger += f'⚡ {pos}\\. {_get_charger_text(charger_data, charger[1])}'
+                    message_charger += f'⚡ {pos}\\. {get_charger_text(charger_data, charger[1])}'
                     pos += 1
                 else:
                     break
@@ -282,7 +282,7 @@ def _free_chargers_response(chargers, radius, location):
     return message
 
 
-def _get_charger_text(charger, distance):
+def get_charger_text(charger, distance):
     message = f"Cargador para *{PLACE_TYPE[charger['devices'][0]['placeType']]} " \
         f"{STATUS[charger['status']]}* a " \
         f"*{distance:0.0f}* metros en " \
