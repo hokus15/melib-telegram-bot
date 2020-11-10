@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.1 (2020-11-10)
+### Fix
+* Corregido fichero requirements.txt para que funcione con Google Cloud ([`6d4a5cf`](https://github.com/hokus15/melib-telegram-bot/commit/6d4a5cf00007d840b2a3ba3af830b2b7323f107e))
+
 ## v0.5.0 (2020-11-10)
 ### Feature
 * Add some logging ([`f6f62b0`](https://github.com/hokus15/melib-telegram-bot/commit/f6f62b0fa305b78d34efd90b47453140b46d524d))
