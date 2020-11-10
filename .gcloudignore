@@ -15,6 +15,7 @@
 .pytest_cache/
 .cz.toml
 .pre-commit-config.yaml
+test/
 *.json
 *.md
 *.cfg
@@ -23,4 +24,5 @@ melib.png
 cloudbuild.yaml
 requirements-test.txt
 telethon_*.py
-test*.*
+app.py
+Procfile
