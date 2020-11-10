@@ -2,6 +2,20 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.0 (2020-11-10)
+### Feature
+* Add some logging ([`f6f62b0`](https://github.com/hokus15/melib-telegram-bot/commit/f6f62b0fa305b78d34efd90b47453140b46d524d))
+* Refactor to deploy on heroku ([`3fc22bf`](https://github.com/hokus15/melib-telegram-bot/commit/3fc22bfd920361fb9171cbcede39dba50a9b84e0))
+* Start heroku refactor ([`65c4343`](https://github.com/hokus15/melib-telegram-bot/commit/65c4343c63bf27e38085d209d830139dd253631c))
+
+### Fix
+* Semantic version config ([`7c7ae34`](https://github.com/hokus15/melib-telegram-bot/commit/7c7ae344a9e0d4da9db1be13c5b1113b542f9e1c))
+* Fix dependencies ([`d2932e6`](https://github.com/hokus15/melib-telegram-bot/commit/d2932e6ac259483510271d1dd623f81f2bbb2197))
+* Add print for debug ([`47006d2`](https://github.com/hokus15/melib-telegram-bot/commit/47006d200cda95b438dece96370c733e2326bcd3))
+* Fix import ([`7ee75c3`](https://github.com/hokus15/melib-telegram-bot/commit/7ee75c302b243f9bccd8beb4466ea701dd4e95a6))
+* Fix melib import ([`552a5b3`](https://github.com/hokus15/melib-telegram-bot/commit/552a5b3bd224fa31cd128347c75c84fbd372f9fe))
+* Added requirements ([`678375c`](https://github.com/hokus15/melib-telegram-bot/commit/678375c32b4d61ac6877e3b1abe70cdf19935d19))
+
 ## v0.4.1 (2020-11-08)
 ### Fix
 * Arrgelos de estilo de código ([`3cac2d1`](https://github.com/hokus15/melib-telegram-bot/commit/3cac2d136c8d3ad1f22e07fa90c6dbae8f5bc247))
