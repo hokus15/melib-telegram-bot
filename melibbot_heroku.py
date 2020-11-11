@@ -10,18 +10,18 @@ if __name__ == "__main__":
     HEROKU_APP_NAME = os.environ.get('HEROKU_APP_NAME')
     TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN')
     # Port is given by Heroku
-    PORT = os.environ.get('PORT')
+    PORT = os.environ.get('PORT', 80)
 
-    if melibbot.bot is None:
-        melibbot.bot_setup()
     # Enable logging
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         level=logging.INFO)
     logger = logging.getLogger(__name__)
 
     # Set up the Updater
-    updater = Updater(dispatcher=melibbot.dispatcher)
-
+    updater = Updater(token=TELEGRAM_TOKEN)
+    dp = updater.dispatcher
+    dp.add_handler(melibbot.get_handler())
+    dp.add_error_handler(melibbot.error_callback)
     # Start the webhook
     updater.start_webhook(listen="0.0.0.0",
                           port=int(PORT),
