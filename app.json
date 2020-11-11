@@ -1,0 +1,20 @@
+{
+  "name": "Melib Telegram Bot",
+  "description": "Bot de telegram para comprobar las estaciones de carga de vehículo eléctrico libres en las Islas Baleares en un radio de la ubicación del usuario.",
+  "repository": "https://github.com/hokus15/melib-telegram-bot",
+  "logo": "https://github.com/hokus15/melib-telegram-bot/raw/master/assets/melib.png",
+  "keywords": ["telegram", "bot", "python", "melib"],
+  "env": {
+    "TELEGRAM_TOKEN": {
+      "description": "Token del bot generado por @BotFather.",
+      "generator": "secret"
+    },
+    "WEBHOOK_TOKEN": {
+      "description": "Token para añadir a la url.",
+      "generator": "secret"
+    },
+    "VALID_USERS": {
+      "description": "Lista de usuarios que pueden acceder al bot separados por ';'.",
+      "value": "1234567890"
+    }
+}
