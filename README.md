@@ -18,9 +18,3 @@ Puedes acceder al bot usando este enlace [@Melib_bot](https://t.me/Melib_bot) o 
 **ATENCIÓN**
 
 Antes de desplegar tu propia instancia en Heroku asegúrate de haber creado un bot siguiendo las intrucciones de la página oficial de [Telegram](https://core.telegram.org/bots#3-how-do-i-create-a-bot).
-
-Si no te funciona correctamente el bot comprueba si la URL del webhook es del tipo https://None.herokuapp.com/...., en ese caso prueba de activar el [dyno-metadata](https://devcenter.heroku.com/articles/dyno-metadata) y re-desplegar la aplicación.
-
-```
-heroku labs:enable runtime-dyno-metadata -a <nombre-aplicacion>
-```

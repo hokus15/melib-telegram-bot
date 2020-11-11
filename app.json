@@ -5,6 +5,10 @@
   "logo": "https://github.com/hokus15/melib-telegram-bot/raw/master/assets/melib.png",
   "keywords": ["telegram", "bot", "python", "melib"],
   "env": {
+    "HEROKU_APP_NAME": {
+        "description": "Pon aquí el mismo valor que has puesto en el campo 'App name'. Si no lo pones exactamente igual no funcionará el bot.",
+        "value": "IMPORTANTE que sea el mismo valor que has puesto en App name"
+        },
     "TELEGRAM_TOKEN": {
       "description": "Token del bot generado por @BotFather.",
       "value": "Tu token obtenido de @BotFather"
