@@ -4,8 +4,12 @@
 # Fichero usado en Google Cloud Functions
 import os
 import telegram
+from telegram.ext import Dispatcher
 from flask import abort
 from melibbot import melibbot
+
+bot = None
+dispatcher = None
 
 
 def _autheticate(request):
@@ -22,12 +26,21 @@ def _autheticate(request):
 
 def webhook(request):
     # print(request.get_json(force=True))
-    if melibbot.bot is None:
-        melibbot.bot_setup()
+    global bot
+    global dispatcher
     if _autheticate(request):
         if request.method == "POST":
-            update = telegram.Update.de_json(request.get_json(force=True), melibbot.bot)
-            melibbot.dispatcher.process_update(update)
+            if bot is None:
+                bot = telegram.Bot(token=os.environ.get('TELEGRAM_TOKEN'))
+                dispatcher = Dispatcher(bot=bot,
+                                        update_queue=None,
+                                        workers=0,
+                                        use_context=True)
+                dispatcher.add_error_handler(melibbot.error_callback)
+                dispatcher.add_handler(melibbot.get_handler())
+
+            update = telegram.Update.de_json(request.get_json(force=True), bot)
+            dispatcher.process_update(update)
         return "ok"
     else:
         # Si no se ha podido verificar el token

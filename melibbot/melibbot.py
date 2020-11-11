@@ -7,14 +7,12 @@ from geopy import distance
 from functools import wraps
 from melibbot import melib
 from melibbot.version import __version__
-from telegram.ext import (MessageHandler, CallbackQueryHandler, ConversationHandler,
-                          Dispatcher, Filters)
+from telegram.ext import (MessageHandler, CallbackQueryHandler,
+                          ConversationHandler, Filters)
 from telegram.utils.helpers import escape_markdown
 
 
-bot = None
-dispatcher = None
-valid_users = []
+valid_users = os.environ.get('VALID_USERS', '').split(';')
 
 
 MAX_CHARGERS = 9
@@ -291,16 +289,7 @@ def get_charger_text(charger, distance):
     return message
 
 
-def bot_setup():
-    global bot
-    global dispatcher
-    global valid_users
-    valid_users = os.environ.get('VALID_USERS', '').split(';')
-    bot = telegram.Bot(token=os.environ.get('TELEGRAM_TOKEN'))
-    dispatcher = Dispatcher(bot=bot,
-                            update_queue=None,
-                            workers=0,
-                            use_context=True)
+def get_handler():
     conv_handler = ConversationHandler(
         entry_points=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, location)],
         states={
@@ -309,5 +298,4 @@ def bot_setup():
         },
         fallbacks=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, location)]
     )
-    dispatcher.add_error_handler(error_callback)
-    dispatcher.add_handler(conv_handler)
+    return conv_handler
