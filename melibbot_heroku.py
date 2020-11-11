@@ -20,7 +20,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
 
     # Set up the Updater
-    updater = Updater(bot=melibbot.bot, dispatcher=melibbot.dispatcher)
+    updater = Updater(dispatcher=melibbot.dispatcher)
 
     # Start the webhook
     updater.start_webhook(listen="0.0.0.0",
