@@ -8,13 +8,14 @@
     "TELEGRAM_TOKEN": {
       "description": "Token del bot generado por @BotFather.",
       "generator": "secret"
-    },
+        },
     "WEBHOOK_TOKEN": {
       "description": "Token para añadir a la url.",
       "generator": "secret"
-    },
+        },
     "VALID_USERS": {
       "description": "Lista de usuarios que pueden acceder al bot separados por ';'.",
       "value": "1234567890"
+        }
     }
 }
