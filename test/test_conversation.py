@@ -1,8 +1,10 @@
 from telethon import TelegramClient
 from telethon.tl.custom.message import Message
 from telethon.sessions import StringSession
+import unittest
 import aiounittest
 import os
+import sys
 
 
 # Evita que falle en travis-ci ya que allí no está el fichero .env
@@ -16,6 +18,7 @@ api_hash = os.environ['TELEGRAM_APP_HASH']
 session_str = os.environ['TELETHON_SESSION']
 
 
+@unittest.skipUnless(sys.platform.startswith("win"), "requires Windows")
 class ConversationTestCase(aiounittest.AsyncTestCase):
 
     async def test_1_conversation_no_chargers(self):
