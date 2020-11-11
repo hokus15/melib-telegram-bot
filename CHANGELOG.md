@@ -2,6 +2,14 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.0 (2020-11-11)
+### Feature
+* Refactor heroku bot ([`f3437bb`](https://github.com/hokus15/melib-telegram-bot/commit/f3437bb060aff2bfdc4732b2e84a049c128941ec))
+
+### Fix
+* Added needed changes to be able to run bot in heroku ([`f1b66db`](https://github.com/hokus15/melib-telegram-bot/commit/f1b66dbf3c8db6c9facbeb41e5980e6d90a8d386))
+* Fix error executing bot on heroku ([`5c1f989`](https://github.com/hokus15/melib-telegram-bot/commit/5c1f989a3bcf630c630b559de6126b0a632813b1))
+
 ## v0.5.1 (2020-11-10)
 ### Fix
 * Corregido fichero requirements.txt para que funcione con Google Cloud ([`6d4a5cf`](https://github.com/hokus15/melib-telegram-bot/commit/6d4a5cf00007d840b2a3ba3af830b2b7323f107e))
