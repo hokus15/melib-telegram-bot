@@ -2,6 +2,19 @@
 
 <!--next-version-placeholder-->
 
+## v0.7.0 (2020-11-11)
+### Feature
+* Documentation update ([`874d76e`](https://github.com/hokus15/melib-telegram-bot/commit/874d76ec58a9966b1b20700cfe9713817ca5e021))
+* Add app.json ([`86e0951`](https://github.com/hokus15/melib-telegram-bot/commit/86e0951ee3a6769426704f9362e5cceb043e6ffd))
+
+### Fix
+* Add new env variable to app.json ([`bf67f23`](https://github.com/hokus15/melib-telegram-bot/commit/bf67f23a021f36aaf6bc3b5d94118fa6d868ed59))
+* Moooooore docuemtation updates ([`7875d52`](https://github.com/hokus15/melib-telegram-bot/commit/7875d526f4fff0e27d5eef7d7e3bd0cd8ba9a8f9))
+* Documentation update ([`9e9bef3`](https://github.com/hokus15/melib-telegram-bot/commit/9e9bef3bccf0135522eddb677d674fc928d99393))
+* Better description app.son descriptions ([`2092258`](https://github.com/hokus15/melib-telegram-bot/commit/20922580c52f845b9b2f62bf48446ccce11fb53b))
+* Skip conversation tests on non windows environments ([`2178072`](https://github.com/hokus15/melib-telegram-bot/commit/21780722381c008bc4f531473677439aa2e7426f))
+* Fix app.json ([`4847dc3`](https://github.com/hokus15/melib-telegram-bot/commit/4847dc3ad701168372c199be5c247e7f10504ad2))
+
 ## v0.6.0 (2020-11-11)
 ### Feature
 * Refactor heroku bot ([`f3437bb`](https://github.com/hokus15/melib-telegram-bot/commit/f3437bb060aff2bfdc4732b2e84a049c128941ec))
