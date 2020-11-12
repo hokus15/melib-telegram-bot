@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v1.0.0 (2020-11-12)
+### Feature
+* Remove Google Cloud Functions support ([`bede341`](https://github.com/hokus15/melib-telegram-bot/commit/bede341705e108f21c3901a9e07e7084e1365a9a))
+
+### Breaking
+* With this change the bot will not be able to be  deployed anymore as a Google Cloud Function  ([`bede341`](https://github.com/hokus15/melib-telegram-bot/commit/bede341705e108f21c3901a9e07e7084e1365a9a))
+
 ## v0.7.0 (2020-11-11)
 ### Feature
 * Documentation update ([`874d76e`](https://github.com/hokus15/melib-telegram-bot/commit/874d76ec58a9966b1b20700cfe9713817ca5e021))
