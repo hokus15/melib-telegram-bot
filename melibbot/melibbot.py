@@ -144,7 +144,7 @@ def request_radius(update, context):
         'latitude': str(update.effective_message.location.latitude),
         'longitude': str(update.effective_message.location.longitude)
     })
-    message = '¿Qué rádio de búsqueda quieres usar?'
+    message = '¿Qué radio de búsqueda quieres usar?'
     keyboard = [
         [
             telegram.InlineKeyboardButton('500 m', callback_data='500'),
@@ -167,7 +167,7 @@ def request_radius(update, context):
 @ send_action(telegram.ChatAction.TYPING)
 def search_chargers(update, context):
     radius = int(update.callback_query.data)
-    logger.info('Solicitada búsqueda de cargadores en un rádio de {} metros'.format(radius))
+    logger.info('Solicitada búsqueda de cargadores en un radio de {} metros'.format(radius))
     update.callback_query.answer()
     if radius > 0:
         message = ''
@@ -175,10 +175,10 @@ def search_chargers(update, context):
             chat_location = json.loads(context.chat_data['location'])
             location = telegram.Location(float(chat_location['longitude']), float(chat_location['latitude']))
             available_chargers = free_chargers(location)
-            # Si hay estaciones de carga dentro del rádio
+            # Si hay estaciones de carga dentro del radio
             if len(available_chargers) > 0:
                 message = free_chargers_response(available_chargers, radius, location)
-            # Si no se han encontrado estaciones de carga libres dentro del rádio
+            # Si no se han encontrado estaciones de carga libres dentro del radio
             else:
                 message = f'💩 ¡Vaya\\! No he encontrado ningún cargador libre en {radius} metros, ' \
                     'comparte otra ubicación y vuelve a probar\\.'
