@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 valid_users = os.environ.get('VALID_USERS', '').split(';')
 
-admin_user = os.environ.get('ADMIN_USER', '')
+admin_user = os.environ.get('ADMIN_USER', valid_users[0])
 
 MAX_CHARGERS = 9
 
