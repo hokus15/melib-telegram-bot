@@ -56,7 +56,7 @@ def restricted(func):
                 text=f'Hola {update.effective_user.first_name}, por '
                 'ahora, no puedes usar el bot, por favor, proporciona '
                 f'el siguiente número al administrador:\n\n*{user_id}*\n\n'
-                'Una vez dado de alta prueba a escribirme algo o enviarme una ubicación:\n\n'
+                'Una vez dado de alta prueba a escribirme algo o enviarme una ubicación\\.\n\n'
                 f'{SEND_LOCATION_INSTRUCTIONS}',
                 parse_mode=telegram.ParseMode.MARKDOWN_V2)
             message = f'Hola soy {update.effective_user.first_name} {update.effective_user.last_name} ' \
