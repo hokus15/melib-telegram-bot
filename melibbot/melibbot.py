@@ -3,6 +3,8 @@ import telegram
 import json
 import html
 import traceback
+import logging
+
 from geopy import distance
 from functools import wraps
 from melibbot import melib
@@ -11,9 +13,11 @@ from telegram.ext import (MessageHandler, CallbackQueryHandler,
                           ConversationHandler, Filters)
 from telegram.utils.helpers import escape_markdown
 
+logger = logging.getLogger(__name__)
 
 valid_users = os.environ.get('VALID_USERS', '').split(';')
 
+admin_user = os.environ.get('ADMIN_USER', '')
 
 MAX_CHARGERS = 9
 
@@ -46,6 +50,8 @@ def restricted(func):
     def wrapped(update, context, *args, **kwargs):
         user_id = str(update.effective_user.id)
         if user_id not in valid_users:
+            logger.warning(f'Acceso restringido al usuario: {user_id} - '
+                           f'{update.effective_user.first_name} {update.effective_user.last_name}')
             update.effective_message.reply_text(
                 text=f'Hola {update.effective_user.first_name}, por '
                 'ahora, no puedes usar el bot, por favor, proporciona '
@@ -56,7 +62,7 @@ def restricted(func):
             message = f'Hola soy {update.effective_user.first_name} {update.effective_user.last_name} ' \
                 f'y mi usuario de Telegram es:\n*{user_id}*\nPor favor dame de ' \
                 'alta en el sistema para que pueda acceder al bot\\.'
-            context.bot.send_message(chat_id=valid_users[0], text=message, parse_mode=telegram.ParseMode.MARKDOWN_V2)
+            context.bot.send_message(chat_id=admin_user, text=message, parse_mode=telegram.ParseMode.MARKDOWN_V2)
             return
         return func(update, context, *args, **kwargs)
     return wrapped
@@ -74,7 +80,7 @@ def send_action(action):
 
 
 def error_callback(update, context):
-    print('Excepción lanzada cuando se procesaba una actualización: {}'.format(context.error))
+    logger.error('Excepción lanzada cuando se procesaba una actualización: {}'.format(context.error))
     tb_list = traceback.format_exception(None, context.error, context.error.__traceback__)
     tb = ''.join(tb_list)
     message = (
@@ -95,8 +101,8 @@ def error_callback(update, context):
     # Corta el mensaje si es más largo de lo permitido
     if len(message) > 4096:
         message = message[:4089] + '</pre>'
-    # Envía el mensaje de error al administrador (ha de ser el primero de la lista de usuarios)
-    context.bot.send_message(chat_id=valid_users[0], text=message, parse_mode=telegram.ParseMode.HTML)
+    # Envía el mensaje de error al administrador
+    context.bot.send_message(chat_id=admin_user, text=message, parse_mode=telegram.ParseMode.HTML)
     update.effective_message.reply_text(text='Ups\\! Parece que algo no ha salido bien\\.\n '
                                              'He enviado un mensaje al administrador con '
                                              'detalles del error para que lo revise\\.\n\n'
