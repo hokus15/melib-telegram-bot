@@ -41,7 +41,7 @@ SEND_LOCATION_INSTRUCTIONS = 'ℹ *Para enviar una ubicación* ℹ \n' \
 
 
 # Estados de conversación
-RADIUS, UPDATE_RADIUS = range(2)
+LOCATION, RADIUS = range(2)
 
 
 def restricted(func):
@@ -134,12 +134,12 @@ def help(update, context):
              f'`v{escape_markdown(__version__)}`',
         parse_mode=telegram.ParseMode.MARKDOWN_V2,
         reply_markup=reply_markup)
-    return RADIUS
+    return LOCATION
 
 
 @ restricted
 @ send_action(telegram.ChatAction.TYPING)
-def location(update, context):
+def request_radius(update, context):
     context.chat_data['location'] = json.dumps({
         'latitude': str(update.effective_message.location.latitude),
         'longitude': str(update.effective_message.location.longitude)
@@ -160,12 +160,12 @@ def location(update, context):
     ]
     reply_markup = telegram.InlineKeyboardMarkup(keyboard)
     update.effective_message.reply_text(message, reply_markup=reply_markup)
-    return UPDATE_RADIUS
+    return RADIUS
 
 
 @ restricted
 @ send_action(telegram.ChatAction.TYPING)
-def callback(update, context):
+def search_chargers(update, context):
     radius = int(update.callback_query.data)
     logger.info('Solicitada búsqueda de cargadores en un rádio de {} metros'.format(radius))
     update.callback_query.answer()
@@ -300,11 +300,11 @@ def get_charger_text(charger, distance):
 
 def get_handler():
     conv_handler = ConversationHandler(
-        entry_points=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, location)],
+        entry_points=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, request_radius)],
         states={
-            RADIUS: [MessageHandler(Filters.location, location)],
-            UPDATE_RADIUS: [CallbackQueryHandler(callback)],
+            LOCATION: [MessageHandler(Filters.location, request_radius)],
+            RADIUS: [CallbackQueryHandler(search_chargers)],
         },
-        fallbacks=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, location)]
+        fallbacks=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, request_radius)]
     )
     return conv_handler
