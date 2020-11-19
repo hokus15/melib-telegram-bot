@@ -80,9 +80,9 @@ def send_action(action):
 
 
 def error_callback(update, context):
-    logger.error('Excepción lanzada cuando se procesaba una actualización: {}'.format(context.error))
     tb_list = traceback.format_exception(None, context.error, context.error.__traceback__)
     tb = ''.join(tb_list)
+    logger.error('Excepción lanzada cuando se procesaba una actualización: {}\n{}'.format(context.error, tb))
     message = (
         'Excepción: {}\n'
         'Mensaje: {}\n'
@@ -167,6 +167,7 @@ def location(update, context):
 @ send_action(telegram.ChatAction.TYPING)
 def callback(update, context):
     radius = int(update.callback_query.data)
+    logger.info('Solicitada búsqueda de cargadores en un rádio de {} metros'.format(radius))
     update.callback_query.answer()
     if radius > 0:
         message = ''
@@ -190,7 +191,8 @@ def callback(update, context):
                                      disable_web_page_preview=False,
                                      text=message)
         except KeyError:
-            print('No he podido encontrar la ubicación en chat_data: {}'.format(context.chat_data))
+            logger.error('No he podido encontrar la ubicación en chat_data: {}'.format(context.chat_data))
+
             update.callback_query.edit_message_text(text='Ups! No he podido realizar la búsqueda, '
                                                     'comparte otra ubicación y vuelve a probar.')
     # Si quiere buscar la estación libre más cercana
@@ -238,7 +240,7 @@ def free_chargers(location):
             dist = distance.distance(latlong, charger_location).meters
             chargers[charger_id] = dist
         except ValueError:
-            print(f'Bad location {charger_location} for charger {charger_id}')
+            logger.error(f'Coordenadas {charger_location} incorrectas para el cargador {charger_id}')
     return chargers
 
 
@@ -281,6 +283,7 @@ def free_chargers_response(chargers, radius, location):
                      f'pm2rdl{message_map_markers}'
         message = f'[🧐]({static_map}){message_header}{message_charger}'
     else:
+        logger.error('Parece que no hay ningún cargador libre')
         message = 'Algo muy gordo ha ocurrido porque no hay ningún cargador libre en las Baleares'
     # print(message)
     return message
