@@ -48,11 +48,11 @@ class ConversationTestCase(aiounittest.AsyncTestCase):
                 text='Enviar mi ubicación actual',
                 share_geo=(longitude, latitude)
             )
-            # Bot < ¿Qué rádio de búsqueda quieres usar?
+            # Bot < ¿Qué radio de búsqueda quieres usar?
             # [500 m][1 Km][2 Km]
             # [3 Km] [5 Km][7 Km]
             resp = await conv.get_response()
-            self.assertTrue('¿Qué rádio de búsqueda quieres usar?' in resp.raw_text)
+            self.assertTrue('¿Qué radio de búsqueda quieres usar?' in resp.raw_text)
             self.assertTrue(resp.button_count == 6)
             self.assertTrue(resp.buttons[0][0].text == '500 m')
             self.assertTrue(resp.buttons[0][1].text == '1 Km')
@@ -101,11 +101,11 @@ class ConversationTestCase(aiounittest.AsyncTestCase):
                 text='Enviar mi ubicación actual',
                 share_geo=(longitude, latitude)
             )
-            # Bot < ¿Qué rádio de búsqueda quieres usar?
+            # Bot < ¿Qué radio de búsqueda quieres usar?
             # [500 m][1 Km][2 Km]
             # [3 Km] [5 Km][7 Km]
             resp = await conv.get_response()
-            self.assertTrue('¿Qué rádio de búsqueda quieres usar?' in resp.raw_text)
+            self.assertTrue('¿Qué radio de búsqueda quieres usar?' in resp.raw_text)
             self.assertTrue(resp.button_count == 6)
             self.assertTrue(resp.buttons[0][0].text == '500 m')
             self.assertTrue(resp.buttons[0][1].text == '1 Km')
