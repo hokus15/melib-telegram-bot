@@ -2,6 +2,21 @@
 
 <!--next-version-placeholder-->
 
+## v1.1.0 (2020-11-19)
+### Feature
+* Add ADMIN_USER as a env variable instead of taking the first user in VALID_USERS as admin ([`3bc5f4b`](https://github.com/hokus15/melib-telegram-bot/commit/3bc5f4b6c74ea74a1a6b93fa0d632774eecc2337))
+
+### Fix
+* Changelog in english ([`ad0aa4b`](https://github.com/hokus15/melib-telegram-bot/commit/ad0aa4b4adb4654291426fafecab53628d4867b9))
+* Improve readability of welcome message. ([`08a52b2`](https://github.com/hokus15/melib-telegram-bot/commit/08a52b28af5a31d9437ea9db60fd358ee9786abd))
+* Improve messages returned to users ([`fedfa30`](https://github.com/hokus15/melib-telegram-bot/commit/fedfa305265636243195eb6577d3a4fb4d2c411b))
+* Fix test ([`e5a9230`](https://github.com/hokus15/melib-telegram-bot/commit/e5a92306fe81f8db550dca73e6402899399b3bbe))
+* Fix misspelling in some messages ([`f2e999e`](https://github.com/hokus15/melib-telegram-bot/commit/f2e999e3214fd92990853fe85aff9b8542e84814))
+* If no ADMIN_USER env variable has been defined it takes the first user from VALID_USERS as the ADMIN_USER ([`526a401`](https://github.com/hokus15/melib-telegram-bot/commit/526a401ed7234cc5954f0a494ade062b2142c50a))
+* Remove date from logging ([`d4c0133`](https://github.com/hokus15/melib-telegram-bot/commit/d4c0133f2b3a903f77d8955a2218b999b780daa8))
+* Update method and conversation status names ([`2cf8a2f`](https://github.com/hokus15/melib-telegram-bot/commit/2cf8a2f4469dcf87c0831eaf96559790a51a6ad9))
+* Add some logs ([`070484b`](https://github.com/hokus15/melib-telegram-bot/commit/070484b418fac009d7a70dc70be944ecaf83b6c0))
+
 ## v1.0.0 (2020-11-12)
 ### Feature
 * Remove Google Cloud Functions support ([`bede341`](https://github.com/hokus15/melib-telegram-bot/commit/bede341705e108f21c3901a9e07e7084e1365a9a))
