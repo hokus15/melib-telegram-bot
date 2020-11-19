@@ -3,6 +3,8 @@ import telegram
 import json
 import html
 import traceback
+import logging
+
 from geopy import distance
 from functools import wraps
 from melibbot import melib
@@ -11,9 +13,11 @@ from telegram.ext import (MessageHandler, CallbackQueryHandler,
                           ConversationHandler, Filters)
 from telegram.utils.helpers import escape_markdown
 
+logger = logging.getLogger(__name__)
 
 valid_users = os.environ.get('VALID_USERS', '').split(';')
 
+admin_user = os.environ.get('ADMIN_USER', valid_users[0])
 
 MAX_CHARGERS = 9
 
@@ -37,7 +41,7 @@ SEND_LOCATION_INSTRUCTIONS = 'ℹ *Para enviar una ubicación* ℹ \n' \
 
 
 # Estados de conversación
-RADIUS, UPDATE_RADIUS = range(2)
+LOCATION, RADIUS = range(2)
 
 
 def restricted(func):
@@ -46,17 +50,19 @@ def restricted(func):
     def wrapped(update, context, *args, **kwargs):
         user_id = str(update.effective_user.id)
         if user_id not in valid_users:
+            logger.warning(f'Acceso restringido al usuario: {user_id} - '
+                           f'{update.effective_user.first_name} {update.effective_user.last_name}')
             update.effective_message.reply_text(
                 text=f'Hola {update.effective_user.first_name}, por '
                 'ahora, no puedes usar el bot, por favor, proporciona '
                 f'el siguiente número al administrador:\n\n*{user_id}*\n\n'
-                'Una vez dado de alta prueba a escribirme algo o enviarme una ubicación:\n'
+                'Una vez dado de alta prueba a escribirme algo o enviarme una ubicación\\.\n\n'
                 f'{SEND_LOCATION_INSTRUCTIONS}',
                 parse_mode=telegram.ParseMode.MARKDOWN_V2)
             message = f'Hola soy {update.effective_user.first_name} {update.effective_user.last_name} ' \
                 f'y mi usuario de Telegram es:\n*{user_id}*\nPor favor dame de ' \
                 'alta en el sistema para que pueda acceder al bot\\.'
-            context.bot.send_message(chat_id=valid_users[0], text=message, parse_mode=telegram.ParseMode.MARKDOWN_V2)
+            context.bot.send_message(chat_id=admin_user, text=message, parse_mode=telegram.ParseMode.MARKDOWN_V2)
             return
         return func(update, context, *args, **kwargs)
     return wrapped
@@ -74,9 +80,9 @@ def send_action(action):
 
 
 def error_callback(update, context):
-    print('Excepción lanzada cuando se procesaba una actualización: {}'.format(context.error))
     tb_list = traceback.format_exception(None, context.error, context.error.__traceback__)
     tb = ''.join(tb_list)
+    logger.error('Excepción lanzada cuando se procesaba una actualización: {}\n{}'.format(context.error, tb))
     message = (
         'Excepción: {}\n'
         'Mensaje: {}\n'
@@ -95,8 +101,8 @@ def error_callback(update, context):
     # Corta el mensaje si es más largo de lo permitido
     if len(message) > 4096:
         message = message[:4089] + '</pre>'
-    # Envía el mensaje de error al administrador (ha de ser el primero de la lista de usuarios)
-    context.bot.send_message(chat_id=valid_users[0], text=message, parse_mode=telegram.ParseMode.HTML)
+    # Envía el mensaje de error al administrador
+    context.bot.send_message(chat_id=admin_user, text=message, parse_mode=telegram.ParseMode.HTML)
     update.effective_message.reply_text(text='Ups\\! Parece que algo no ha salido bien\\.\n '
                                              'He enviado un mensaje al administrador con '
                                              'detalles del error para que lo revise\\.\n\n'
@@ -128,17 +134,17 @@ def help(update, context):
              f'`v{escape_markdown(__version__)}`',
         parse_mode=telegram.ParseMode.MARKDOWN_V2,
         reply_markup=reply_markup)
-    return RADIUS
+    return LOCATION
 
 
 @ restricted
 @ send_action(telegram.ChatAction.TYPING)
-def location(update, context):
+def request_radius(update, context):
     context.chat_data['location'] = json.dumps({
         'latitude': str(update.effective_message.location.latitude),
         'longitude': str(update.effective_message.location.longitude)
     })
-    message = '¿Qué rádio de búsqueda quieres usar?'
+    message = '¿Qué radio de búsqueda quieres usar?'
     keyboard = [
         [
             telegram.InlineKeyboardButton('500 m', callback_data='500'),
@@ -154,13 +160,14 @@ def location(update, context):
     ]
     reply_markup = telegram.InlineKeyboardMarkup(keyboard)
     update.effective_message.reply_text(message, reply_markup=reply_markup)
-    return UPDATE_RADIUS
+    return RADIUS
 
 
 @ restricted
 @ send_action(telegram.ChatAction.TYPING)
-def callback(update, context):
+def search_chargers(update, context):
     radius = int(update.callback_query.data)
+    logger.info('Solicitada búsqueda de cargadores en un radio de {} metros'.format(radius))
     update.callback_query.answer()
     if radius > 0:
         message = ''
@@ -168,10 +175,10 @@ def callback(update, context):
             chat_location = json.loads(context.chat_data['location'])
             location = telegram.Location(float(chat_location['longitude']), float(chat_location['latitude']))
             available_chargers = free_chargers(location)
-            # Si hay estaciones de carga dentro del rádio
+            # Si hay estaciones de carga dentro del radio
             if len(available_chargers) > 0:
                 message = free_chargers_response(available_chargers, radius, location)
-            # Si no se han encontrado estaciones de carga libres dentro del rádio
+            # Si no se han encontrado estaciones de carga libres dentro del radio
             else:
                 message = f'💩 ¡Vaya\\! No he encontrado ningún cargador libre en {radius} metros, ' \
                     'comparte otra ubicación y vuelve a probar\\.'
@@ -184,7 +191,8 @@ def callback(update, context):
                                      disable_web_page_preview=False,
                                      text=message)
         except KeyError:
-            print('No he podido encontrar la ubicación en chat_data: {}'.format(context.chat_data))
+            logger.error('No he podido encontrar la ubicación en chat_data: {}'.format(context.chat_data))
+
             update.callback_query.edit_message_text(text='Ups! No he podido realizar la búsqueda, '
                                                     'comparte otra ubicación y vuelve a probar.')
     # Si quiere buscar la estación libre más cercana
@@ -232,7 +240,7 @@ def free_chargers(location):
             dist = distance.distance(latlong, charger_location).meters
             chargers[charger_id] = dist
         except ValueError:
-            print(f'Bad location {charger_location} for charger {charger_id}')
+            logger.error(f'Coordenadas {charger_location} incorrectas para el cargador {charger_id}')
     return chargers
 
 
@@ -275,6 +283,7 @@ def free_chargers_response(chargers, radius, location):
                      f'pm2rdl{message_map_markers}'
         message = f'[🧐]({static_map}){message_header}{message_charger}'
     else:
+        logger.error('Parece que no hay ningún cargador libre')
         message = 'Algo muy gordo ha ocurrido porque no hay ningún cargador libre en las Baleares'
     # print(message)
     return message
@@ -291,11 +300,11 @@ def get_charger_text(charger, distance):
 
 def get_handler():
     conv_handler = ConversationHandler(
-        entry_points=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, location)],
+        entry_points=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, request_radius)],
         states={
-            RADIUS: [MessageHandler(Filters.location, location)],
-            UPDATE_RADIUS: [CallbackQueryHandler(callback)],
+            LOCATION: [MessageHandler(Filters.location, request_radius)],
+            RADIUS: [CallbackQueryHandler(search_chargers)],
         },
-        fallbacks=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, location)]
+        fallbacks=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, request_radius)]
     )
     return conv_handler

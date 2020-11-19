@@ -32,7 +32,7 @@
 
 ## v0.5.1 (2020-11-10)
 ### Fix
-* Corregido fichero requirements.txt para que funcione con Google Cloud ([`6d4a5cf`](https://github.com/hokus15/melib-telegram-bot/commit/6d4a5cf00007d840b2a3ba3af830b2b7323f107e))
+* Fix requirements.txt to work with Google Cloud ([`6d4a5cf`](https://github.com/hokus15/melib-telegram-bot/commit/6d4a5cf00007d840b2a3ba3af830b2b7323f107e))
 
 ## v0.5.0 (2020-11-10)
 ### Feature
@@ -50,15 +50,15 @@
 
 ## v0.4.1 (2020-11-08)
 ### Fix
-* Arrgelos de estilo de código ([`3cac2d1`](https://github.com/hokus15/melib-telegram-bot/commit/3cac2d136c8d3ad1f22e07fa90c6dbae8f5bc247))
-* Corrige warning lanzado en los test unitarios ([`3b7e3ec`](https://github.com/hokus15/melib-telegram-bot/commit/3b7e3ec5959729c236a34ae93a5404e27462a5f8))
+* Code style ([`3cac2d1`](https://github.com/hokus15/melib-telegram-bot/commit/3cac2d136c8d3ad1f22e07fa90c6dbae8f5bc247))
+* Fix warning thrown in unit tests ([`3b7e3ec`](https://github.com/hokus15/melib-telegram-bot/commit/3b7e3ec5959729c236a34ae93a5404e27462a5f8))
 
 ## v0.4.0 (2020-11-03)
 ### Feature
-* Incluida versión del bot en el mensaje de bienvenida ([`ab53a22`](https://github.com/hokus15/melib-telegram-bot/commit/ab53a22dff809fadb566b31a47291a181dbf70a1))
+* Include bot version in help message ([`ab53a22`](https://github.com/hokus15/melib-telegram-bot/commit/ab53a22dff809fadb566b31a47291a181dbf70a1))
 
 ### Fix
-* Evitar que se suban ficheros innecesarios a Cloud Functions ([`fbfb80d`](https://github.com/hokus15/melib-telegram-bot/commit/fbfb80d4f26d579af54fa4569ec915030cb4959b))
+* Avoid to updload unneeded files to Cloud Functions ([`fbfb80d`](https://github.com/hokus15/melib-telegram-bot/commit/fbfb80d4f26d579af54fa4569ec915030cb4959b))
 
 ## v0.3.0 (2020-11-03)
 ### Feature
@@ -66,4 +66,4 @@
 * Use semver ([`df8f325`](https://github.com/hokus15/melib-telegram-bot/commit/df8f3253ddb1271dd7806e4292d41da6099b843e))
 
 ### Fix
-* Arreglo uso semver ([`1e78940`](https://github.com/hokus15/melib-telegram-bot/commit/1e78940b44cf3d66bc0ac17d9fd8aae09439ac80))
+* Fix semver ([`1e78940`](https://github.com/hokus15/melib-telegram-bot/commit/1e78940b44cf3d66bc0ac17d9fd8aae09439ac80))
