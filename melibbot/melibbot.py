@@ -300,7 +300,7 @@ def chargers_response(chargers, radius, location):
                      f'pm2rdl{message_map_markers}'
         message = f'[🧐]({static_map}){message_header}{message_charger}'
     else:
-        logger.error('Parece que no hay ningún cargador disponibles')
+        logger.error('Parece que no hay ningún cargador disponible')
         message = 'Algo muy gordo ha ocurrido porque no hay ningún cargador disponible en las Baleares'
     # print(message)
     return message
