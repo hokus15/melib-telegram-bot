@@ -163,6 +163,7 @@ def chargers_help(update, context):
 @ restricted
 @ send_action(telegram.ChatAction.TYPING)
 def request_radius(update, context):
+    telegram.ReplyKeyboardRemove().remove_keyboard()
     context.chat_data['location'] = json.dumps({
         'latitude': str(update.effective_message.location.latitude),
         'longitude': str(update.effective_message.location.longitude)
