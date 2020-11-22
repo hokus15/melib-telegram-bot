@@ -290,7 +290,7 @@ def chargers_response(chargers, radius, location):
                 if charger[1] <= radius and pos <= MAX_CHARGERS:
                     charger_data = melib.device_groups_by_id(charger[0])
                     message_map_markers += f'~{charger_data["lng"]},{charger_data["lat"]},pm2bll{pos}'
-                    message_charger += f'⚡ {pos}\\. {get_charger_text(charger_data, charger[1])}'
+                    message_charger += f'⚡ {pos}. {get_charger_text(charger_data, charger[1])}'
                     pos += 1
                 else:
                     break
@@ -310,7 +310,7 @@ def get_charger_text(charger, distance):
     message = f'Cargador para <b>{PLACE_TYPE[charger["devices"][0]["placeType"]]} ' \
         f'{STATUS[charger["status"]]}</b> a ' \
         f'<b>{distance:0.0f}</b> metros en ' \
-        f'<a href="https://www.google.com/maps/place/{charger["lat"]},{charger["lng"]}"' \
+        f'<a href="https://www.google.com/maps/place/{charger["lat"]},{charger["lng"]}">' \
         f'<b>{charger["address"]}</b></a>\n'
     return message
 
