@@ -197,6 +197,7 @@ def search_chargers(update, context):
             location = telegram.Location(float(chat_location['longitude']), float(chat_location['latitude']))
             available_chargers = chargers_list(location, context.chat_data.get('onlyAvailable', True))
             # Si hay estaciones de carga dentro del radio
+            logger.info('{}'.format(available_chargers))
             if len(available_chargers) > 0:
                 message = chargers_response(available_chargers, radius, location)
             # Si no se han encontrado estaciones de carga dentro del radio
@@ -247,7 +248,6 @@ def chargers_list(location, onlyAvailable=True):
         "placeType": None
     }
 
-    logger.info(json.dumps(payload))
     all_chargers_json_data = melib.device_groups(payload)
     latlong = (location.latitude, location.longitude)
     chargers = {}
