@@ -277,7 +277,6 @@ def chargers_response(chargers, radius, location):
         # Siempre hay que retornar al menos el cargador más cercano
         closest_charger = sorted_chargers.pop(0)
         closest_charger_data = melib.device_groups_by_id(closest_charger[0])
-        print.info(json.dumps(closest_charger_data))
         closest_charger_distance = closest_charger[1]
         message_charger += f'⚡ 1. {get_charger_text(closest_charger_data, closest_charger_distance)}'
         message_map_markers += f'~{closest_charger_data["lng"]},{closest_charger_data["lat"]},pm2bll1'
@@ -305,7 +304,7 @@ def chargers_response(chargers, radius, location):
     else:
         logger.error('Parece que no hay ningún cargador disponible')
         message = 'Algo muy gordo ha ocurrido porque no hay ningún cargador disponible en las Baleares'
-    # print(message)
+    logger.info(message)
     return message
 
 
