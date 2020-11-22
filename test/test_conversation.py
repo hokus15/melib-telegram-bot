@@ -30,7 +30,7 @@ class ConversationTestCase(aiounittest.AsyncTestCase):
         async with client.conversation('@Devel_melib_bot', timeout=20) as conv:
             print('User > /libres\n')
             # User > /start
-            await conv.send_message('/start')
+            await conv.send_message('/libres')
             # Bot < Hola Jordi, para poder darte información de los cargadores que
             # hay libres cerca de tu posición, por favor, envíame tu ubicación usando
             # el botón de abajo.
@@ -81,15 +81,15 @@ class ConversationTestCase(aiounittest.AsyncTestCase):
         await client.start()
         # Create a conversation
         async with client.conversation('@Devel_melib_bot', timeout=20) as conv:
-            print('User > /start\n')
+            print('User > /libres\n')
             # User > /start
-            await conv.send_message('/start')
+            await conv.send_message('/libres')
             # Bot < Hola Jordi, para poder darte información de los cargadores que
             # hay libres cerca de tu posición, por favor, envíame tu ubicación usando
             # el botón de abajo.
             resp: Message = await conv.get_response()
             self.assertTrue('Hola Jordi, para poder darte información de los cargadores que '
-                            'hay libres cerca de tu posición, por favor, envíame tu ubicación usando '
+                            'hay cerca de tu posición, por favor, envíame tu ubicación usando '
                             'el botón de abajo.' in resp.raw_text)
 #            print('Bot < {}\n[Enviar mi ubicación actual]\n\n'.format(resp.raw_text))
             # User > Click 'Enviar mi ubicación actual' button
