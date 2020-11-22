@@ -19,7 +19,7 @@ class MelibTestCase(unittest.TestCase):
             with patch("melibbot.melib.device_groups") as mock_devicegroups:
                 mock_devicegroups.return_value = json.loads(f.read())
                 location = telegram.Location(2.4916501, 39.3892373)
-                response = melibbot.free_chargers(location)
+                response = melibbot.chargers_list(location)
                 self.assertEqual(len(response), 5)
 
     def test_free_chargers_bad_coordinates(self):
@@ -27,7 +27,7 @@ class MelibTestCase(unittest.TestCase):
             with patch("melibbot.melib.device_groups") as mock_devicegroups:
                 mock_devicegroups.return_value = json.loads(f.read())
                 location = telegram.Location(2.4916501, 39.3892373)
-                response = melibbot.free_chargers(location)
+                response = melibbot.chargers_list(location)
                 self.assertEqual(len(response), 4)
                 self.assertTrue(684 not in response)
 
@@ -35,7 +35,7 @@ class MelibTestCase(unittest.TestCase):
         chargers = {}
         radius = 500
         location = telegram.Location(2.654223, 39.575416)
-        response = melibbot.free_chargers_response(chargers, radius, location)
+        response = melibbot.chargers_response(chargers, radius, location)
         self.assertTrue(response.startswith('Algo muy gordo ha ocurrido'))
 
     def test_free_chargers_response_one_charger_available_not_in_radius(self):
@@ -44,7 +44,7 @@ class MelibTestCase(unittest.TestCase):
         }
         radius = 500
         location = telegram.Location(2.654223, 39.575416)
-        response = melibbot.free_chargers_response(chargers, radius, location)
+        response = melibbot.chargers_response(chargers, radius, location)
         self.assertTrue("No he encontrado cargadores disponibles en 500 metros" in response)
         self.assertTrue(re.search(r"Cargador para \*coche .*\* a \*1000\* metros.*", response, re.DOTALL))
         self.assertEqual(response.count("Cargador para *coche "), 1)
@@ -55,7 +55,7 @@ class MelibTestCase(unittest.TestCase):
         }
         radius = 500
         location = telegram.Location(2.654223, 39.575416)
-        response = melibbot.free_chargers_response(chargers, radius, location)
+        response = melibbot.chargers_response(chargers, radius, location)
         self.assertTrue('He encontrado los siguientes cargadores' in response)
         self.assertTrue(re.search(r"Cargador para \*coche .*\* a \*400\* metros.*", response, re.DOTALL))
         self.assertEqual(response.count("Cargador para *coche"), 1)
@@ -70,7 +70,7 @@ class MelibTestCase(unittest.TestCase):
         }
         radius = 500
         location = telegram.Location(2.654223, 39.575416)
-        response = melibbot.free_chargers_response(chargers, radius, location)
+        response = melibbot.chargers_response(chargers, radius, location)
         self.assertTrue('He encontrado los siguientes cargadores' in response)
         self.assertTrue(re.search(r".*Cargador para \*coche .*\* a \*400\* metros.*", response, re.DOTALL))
         self.assertTrue(re.search(r".*Cargador para \*coche .*\* a \*342\* metros.*", response, re.DOTALL))
