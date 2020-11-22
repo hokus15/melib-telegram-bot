@@ -140,6 +140,23 @@ def list_chargers_help(update, context):
 
 @ restricted
 @ send_action(telegram.ChatAction.TYPING)
+def chargers_help(update, context):
+    location_keyboard = telegram.KeyboardButton(text="Enviar mi ubicación actual", request_location=True)
+    reply_markup = telegram.ReplyKeyboardMarkup([[location_keyboard]], one_time_keyboard=True)
+    update.effective_message.reply_text(
+        text=f'⚠ Hola {update.effective_user.first_name}, para poder darte '
+        'información de los cargadores que hay cerca de tu '
+        'posición, por favor, <b>envíame tu ubicación</b> usando el botón de abajo.\n\n'
+        f'{HELP_HINT}\n\n'
+        f'{HELP_LOCATION_INSTRUCTIONS}\n\n'
+        f'{HELP_FOOTER}',
+        parse_mode=telegram.ParseMode.HTML,
+        reply_markup=reply_markup)
+    return LOCATION
+
+
+@ restricted
+@ send_action(telegram.ChatAction.TYPING)
 def request_radius(update, context):
     context.chat_data['location'] = json.dumps({
         'latitude': str(update.effective_message.location.latitude),
@@ -202,21 +219,6 @@ def search_chargers(update, context):
         update.callback_query.edit_message_text(f'Vale {update.callback_query.from_user.first_name}, '
                                                 'tú mandas, estación libre más cercana.')
     return ConversationHandler.END
-
-
-def chargers_help(update, context):
-    location_keyboard = telegram.KeyboardButton(text="Enviar mi ubicación actual", request_location=True)
-    reply_markup = telegram.ReplyKeyboardMarkup([[location_keyboard]], one_time_keyboard=True)
-    update.effective_message.reply_text(
-        text=f'⚠ Hola {update.effective_user.first_name}, para poder darte '
-        'información de los cargadores que hay cerca de tu '
-        'posición, por favor, <b>envíame tu ubicación</b> usando el botón de abajo.\n\n'
-        f'{HELP_HINT}\n\n'
-        f'{HELP_LOCATION_INSTRUCTIONS}\n\n'
-        f'{HELP_FOOTER}',
-        parse_mode=telegram.ParseMode.HTML,
-        reply_markup=reply_markup)
-    return LOCATION
 
 
 def chargers_list(location, onlyAvailable=True):
@@ -324,6 +326,6 @@ def get_handler():
             LOCATION: [MessageHandler(Filters.location, request_radius)],
             RADIUS: [CallbackQueryHandler(search_chargers)],
         },
-        fallbacks=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, request_radius)]
+        fallbacks=[MessageHandler(Filters.text, chargers_help), MessageHandler(Filters.location, request_radius)]
     )
     return conv_handler
