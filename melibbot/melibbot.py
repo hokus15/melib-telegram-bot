@@ -196,7 +196,7 @@ def search_chargers(update, context):
         try:
             chat_location = json.loads(context.chat_data['location'])
             location = telegram.Location(float(chat_location['longitude']), float(chat_location['latitude']))
-            available_chargers = chargers_list(location, context.chat_data.get('onlyAvailable', True))
+            available_chargers = chargers_list(location, context.chat_data.pop('onlyAvailable', True))
             # Si hay estaciones de carga dentro del radio
             if len(available_chargers) > 0:
                 message = chargers_response(available_chargers, radius, location)
@@ -218,6 +218,7 @@ def search_chargers(update, context):
     else:
         update.callback_query.edit_message_text(f'Vale {update.callback_query.from_user.first_name}, '
                                                 'tú mandas, estación libre más cercana.')
+
     return ConversationHandler.END
 
 
