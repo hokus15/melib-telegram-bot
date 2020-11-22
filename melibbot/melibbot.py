@@ -11,7 +11,6 @@ from melibbot import melib
 from melibbot.version import __version__
 from telegram.ext import (MessageHandler, CallbackQueryHandler,
                           ConversationHandler, Filters, CommandHandler)
-from telegram.utils.helpers import escape_markdown
 
 logger = logging.getLogger(__name__)
 
@@ -35,24 +34,24 @@ STATUS = {
 
 HELP_HEADER = 'Prueba a mandarme los comandos /lista, /libres o una ubicación.'
 
-HELP_LOCATION_INSTRUCTIONS = 'ℹ *Para enviar una ubicación* ℹ \n' \
+HELP_LOCATION_INSTRUCTIONS = 'ℹ <b>Para enviar una ubicación</b> ℹ \n' \
                              '1. Pulsa sobre el clip (📎) que encontrarás en la ventana de mensaje.\n' \
                              '2. Elige la opción de `Ubicación`.\n' \
                              '3. Desplázate por el mapa hasta la ubicación que quieras.\n' \
                              '4. Elije `Enviar la ubicación seleccionada`.'
 
-HELP_HINT = 'ℹ *CONSEJO* ℹ\n' \
+HELP_HINT = 'ℹ <b>CONSEJO</b> ℹ\n' \
             'A parte de enviar tu ubicación actual, puedes enviar la ubicación ' \
             'de tu destino para saber los cargadores que hay libres cerca.'
 
-HELP_FOOTER = '‼ *ATENCIÓN* ‼\n' \
+HELP_FOOTER = '‼ <b>ATENCIÓN</b> ‼\n' \
               f'Te voy a devolver como máximo {MAX_CHARGERS} cargadores.\n\n' \
-              'La distancia la mido en *linea recta* entre la ubicación enviada ' \
+              'La distancia la mido en <b>linea recta</b> entre la ubicación enviada ' \
               'y la ubicación del cargador. No tengo en cuenta la ruta ' \
               'ni la altura de ninguno de los dos puntos. Por lo que la ' \
               'distancia para llegar al cargador puede variar dependiendo ' \
               'del camino que sigas hasta él.\n\n' \
-              f'`v{__version__}`',
+              f'<code>v{__version__}</code>',
 
 # Estados de conversación
 LOCATION, RADIUS = range(2)
@@ -67,16 +66,16 @@ def restricted(func):
             logger.warning(f'Acceso restringido al usuario: {user_id} - '
                            f'{update.effective_user.first_name} {update.effective_user.last_name}')
             update.effective_message.reply_text(
-                text=escape_markdown(f'Hola {update.effective_user.first_name}, por '
-                                     'ahora, no puedes usar el bot, por favor, proporciona '
-                                     f'el siguiente número al administrador:\n\n*{user_id}*\n\n'
-                                     'Una vez dado de alta prueba a mandarme los comandos /lista o /libres.\n\n'
-                                     f'{HELP_LOCATION_INSTRUCTIONS}'),
-                parse_mode=telegram.ParseMode.MARKDOWN_V2)
-            message = escape_markdown(f'Hola soy {update.effective_user.first_name} {update.effective_user.last_name} '
-                                      f'y mi usuario de Telegram es:\n*{user_id}*\nPor favor dame de '
-                                      'alta en el sistema para que pueda acceder al bot.')
-            context.bot.send_message(chat_id=admin_user, text=message, parse_mode=telegram.ParseMode.MARKDOWN_V2)
+                text=f'Hola {update.effective_user.first_name}, por '
+                     'ahora, no puedes usar el bot, por favor, proporciona '
+                     f'el siguiente número al administrador:\n\n<b>{user_id}</b>\n\n'
+                     'Una vez dado de alta prueba a mandarme los comandos /lista o /libres.\n\n'
+                     f'{HELP_LOCATION_INSTRUCTIONS}',
+                parse_mode=telegram.ParseMode.HTML)
+            message = f'Hola soy {update.effective_user.first_name} {update.effective_user.last_name} '
+            f'y mi usuario de Telegram es:\n<b>{user_id}</b>\nPor favor dame de '
+            'alta en el sistema para que pueda acceder al bot.'
+            context.bot.send_message(chat_id=admin_user, text=message, parse_mode=telegram.ParseMode.HTML)
             return
         return func(update, context, *args, **kwargs)
     return wrapped
@@ -117,11 +116,11 @@ def error_callback(update, context):
         message = message[:4089] + '</pre>'
     # Envía el mensaje de error al administrador
     context.bot.send_message(chat_id=admin_user, text=message, parse_mode=telegram.ParseMode.HTML)
-    update.effective_message.reply_text(text=escape_markdown('Ups\\! Parece que algo no ha salido bien.\n '
-                                                             'He enviado un mensaje al administrador con '
-                                                             'detalles del error para que lo revise.\n\n'
-                                                             '*Error*: {}'.format(escape_markdown(str(context.error)))),
-                                        parse_mode=telegram.ParseMode.MARKDOWN_V2)
+    update.effective_message.reply_text(text=('Ups! Parece que algo no ha salido bien.\n '
+                                              'He enviado un mensaje al administrador con '
+                                              'detalles del error para que lo revise.\n\n'
+                                              '*Error*: {}'.format(str(context.error))),
+                                        parse_mode=telegram.ParseMode.HTML)
     return ConversationHandler.END
 
 
@@ -184,12 +183,12 @@ def search_chargers(update, context):
             else:
                 message = escape_markdown(f'💩 ¡Vaya! No he encontrado ningún cargador en {radius} metros, '
                                           'comparte otra ubicación y vuelve a probar.')
-#            update.callback_query.edit_message_text(parse_mode=telegram.ParseMode.MARKDOWN_V2,
+#            update.callback_query.edit_message_text(parse_mode=telegram.ParseMode.HTML,
 #                                                    disable_web_page_preview=True,
 #                                                    text=f'Vale, busco cargadores en {radius} metros')
             update.callback_query.edit_message_reply_markup(telegram.InlineKeyboardMarkup([[]]))
             context.bot.send_message(chat_id=update.effective_user.id,
-                                     parse_mode=telegram.ParseMode.MARKDOWN_V2,
+                                     parse_mode=telegram.ParseMode.HTML,
                                      disable_web_page_preview=False,
                                      text=message)
         except KeyError:
@@ -210,11 +209,11 @@ def chargers_help(update, context):
     update.effective_message.reply_text(
         text=escape_markdown(f'⚠ Hola {update.effective_user.first_name}, para poder darte '
                              'información de los cargadores que hay cerca de tu '
-                             'posición, por favor, *envíame tu ubicación* usando el botón de abajo.\n\n'
+                             'posición, por favor, <b>envíame tu ubicación</b> usando el botón de abajo.\n\n'
                              f'{HELP_HINT}\n\n'
                              f'{HELP_LOCATION_INSTRUCTIONS}\n\n'
                              f'{HELP_FOOTER}'),
-        parse_mode=telegram.ParseMode.MARKDOWN_V2,
+        parse_mode=telegram.ParseMode.HTML,
         reply_markup=reply_markup)
     return LOCATION
 
@@ -298,7 +297,7 @@ def chargers_response(chargers, radius, location):
             f'{location.longitude},{location.latitude}' \
             f'&size=300,300&pt={location.longitude},{location.latitude},' \
                      f'pm2rdl{message_map_markers}'
-        message = f'[🧐]({static_map}){message_header}{message_charger}'
+        message = f'<a href="{static_map}){message_header}{message_charger}">🧐</a>'
     else:
         logger.error('Parece que no hay ningún cargador disponible')
         message = 'Algo muy gordo ha ocurrido porque no hay ningún cargador disponible en las Baleares'
@@ -307,11 +306,11 @@ def chargers_response(chargers, radius, location):
 
 
 def get_charger_text(charger, distance):
-    message = f"Cargador para *{PLACE_TYPE[charger['devices'][0]['placeType']]} " \
-        f"{STATUS[charger['status']]}* a " \
-        f"*{distance:0.0f}* metros en " \
-        f"[*{escape_markdown(charger['address'], 2)}*]" \
-        f"(https://www.google.com/maps/place/{charger['lat']},{charger['lng']})\n"
+    message = f'Cargador para <b>{PLACE_TYPE[charger['devices'][0]['placeType']]} ' \
+        f'{STATUS[charger['status']]}</b> a ' \
+        f'<b>{distance:0.0f}</b> metros en ' \
+        f'<a href="https://www.google.com/maps/place/{charger['lat']},{charger['lng']}"' \
+        f'<b>{charger['address'], 2}</b></a>\n'
     return message
 
 
