@@ -51,7 +51,7 @@ HELP_FOOTER = '‼ <b>ATENCIÓN</b> ‼\n' \
               'ni la altura de ninguno de los dos puntos. Por lo que la ' \
               'distancia para llegar al cargador puede variar dependiendo ' \
               'del camino que sigas hasta él.\n\n' \
-              f'<code>v{__version__}</code>',
+              f'<code>v{__version__}</code>'
 
 # Estados de conversación
 LOCATION, RADIUS = range(2)
@@ -119,7 +119,7 @@ def error_callback(update, context):
     update.effective_message.reply_text(text=('Ups! Parece que algo no ha salido bien.\n '
                                               'He enviado un mensaje al administrador con '
                                               'detalles del error para que lo revise.\n\n'
-                                              '*Error*: {}'.format(str(context.error))),
+                                              '<b>Error</b>: {}'.format(str(context.error))),
                                         parse_mode=telegram.ParseMode.HTML)
     return ConversationHandler.END
 
@@ -187,6 +187,7 @@ def search_chargers(update, context):
 #                                                    disable_web_page_preview=True,
 #                                                    text=f'Vale, busco cargadores en {radius} metros')
             update.callback_query.edit_message_reply_markup(telegram.InlineKeyboardMarkup([[]]))
+            logger.info(message)
             context.bot.send_message(chat_id=update.effective_user.id,
                                      parse_mode=telegram.ParseMode.HTML,
                                      disable_web_page_preview=False,
