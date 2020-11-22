@@ -242,7 +242,7 @@ def chargers_list(location, onlyAvailable=True):
         "bounds": None,
         "idComponentType": None,
         "onlyAvailable": onlyAvailable,
-        "includeOffline": False,
+        "includeOffline": True,
         "chargeType": None,
         "placeType": None
     }
@@ -278,7 +278,7 @@ def chargers_response(chargers, radius, location):
         closest_charger = sorted_chargers.pop(0)
         closest_charger_data = melib.device_groups_by_id(closest_charger[0])
         closest_charger_distance = closest_charger[1]
-        message_charger += f'⚡ 1\\. {get_charger_text(closest_charger_data, closest_charger_distance)}'
+        message_charger += f'⚡ 1. {get_charger_text(closest_charger_data, closest_charger_distance)}'
         message_map_markers += f'~{closest_charger_data["lng"]},{closest_charger_data["lat"]},pm2bll1'
         # Si el cargador más cercano está fuera del radio
         if closest_charger_distance > radius:
