@@ -163,7 +163,6 @@ def chargers_help(update, context):
 @ restricted
 @ send_action(telegram.ChatAction.TYPING)
 def request_radius(update, context):
-    telegram.ReplyKeyboardRemove().remove_keyboard()
     context.chat_data['location'] = json.dumps({
         'latitude': str(update.effective_message.location.latitude),
         'longitude': str(update.effective_message.location.longitude)
@@ -206,11 +205,12 @@ def search_chargers(update, context):
             else:
                 message = f'💩 ¡Vaya! No he encontrado ningún cargador en {radius} metros, '
                 'comparte otra ubicación y vuelve a probar.'
-            update.callback_query.edit_message_reply_markup(telegram.InlineKeyboardMarkup([[]]))
+            # update.callback_query.edit_message_reply_markup(telegram.InlineKeyboardMarkup([[]]))
             context.bot.send_message(chat_id=update.effective_user.id,
                                      parse_mode=telegram.ParseMode.HTML,
                                      disable_web_page_preview=False,
-                                     text=message)
+                                     text=message,
+                                     reply_markup=telegram.ReplyKeyboardRemove())
         except KeyError:
             logger.error('No he podido encontrar la ubicación en chat_data: {}'.format(context.chat_data))
 
