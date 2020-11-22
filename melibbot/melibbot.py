@@ -28,7 +28,7 @@ PLACE_TYPE = {
 STATUS = {
     'AVAILABLE': 'libre',
     'OCCUPIED_PARTIAL': 'parcialmente ocupado',
-    'UNAVAILABLE': 'no dispobible',
+    'UNAVAILABLE': 'no disponible',
     'OCCUPIED': 'ocupado',
     'UNKNOWN': 'desconocido',
     'OFFLINE': 'no gestionado'
@@ -199,7 +199,6 @@ def search_chargers(update, context):
             location = telegram.Location(float(chat_location['longitude']), float(chat_location['latitude']))
             available_chargers = chargers_list(location, context.chat_data.get('onlyAvailable', True))
             # Si hay estaciones de carga dentro del radio
-            logger.info('{}'.format(available_chargers))
             if len(available_chargers) > 0:
                 message = chargers_response(available_chargers, radius, location)
             # Si no se han encontrado estaciones de carga dentro del radio
@@ -207,7 +206,6 @@ def search_chargers(update, context):
                 message = f'💩 ¡Vaya! No he encontrado ningún cargador en {radius} metros, '
                 'comparte otra ubicación y vuelve a probar.'
             update.callback_query.edit_message_reply_markup(telegram.InlineKeyboardMarkup([[]]))
-            logger.info(message)
             context.bot.send_message(chat_id=update.effective_user.id,
                                      parse_mode=telegram.ParseMode.HTML,
                                      disable_web_page_preview=False,
@@ -280,7 +278,6 @@ def chargers_response(chargers, radius, location):
         # Siempre hay que retornar al menos el cargador más cercano
         closest_charger = sorted_chargers.pop(0)
         closest_charger_data = melib.device_groups_by_id(closest_charger[0])
-        logger.info('1.- {}'.format(json.dumps(closest_charger_data)))
         closest_charger_distance = closest_charger[1]
         message_charger += f'⚡ 1. {get_charger_text(closest_charger_data, closest_charger_distance)}'
         message_map_markers += f'~{closest_charger_data["lng"]},{closest_charger_data["lat"]},pm2bll1'
@@ -295,7 +292,6 @@ def chargers_response(chargers, radius, location):
             for charger in sorted_chargers:
                 if charger[1] <= radius and pos <= MAX_CHARGERS:
                     charger_data = melib.device_groups_by_id(charger[0])
-                    logger.info('{}.- {}'.format(pos, json.dumps(charger_data)))
                     message_map_markers += f'~{charger_data["lng"]},{charger_data["lat"]},pm2bll{pos}'
                     message_charger += f'⚡ {pos}. {get_charger_text(charger_data, charger[1])}'
                     pos += 1
@@ -309,7 +305,6 @@ def chargers_response(chargers, radius, location):
     else:
         logger.error('Parece que no hay ningún cargador disponible')
         message = 'Algo muy gordo ha ocurrido porque no hay ningún cargador disponible en las Baleares'
-    logger.info(message)
     return message
 
 
