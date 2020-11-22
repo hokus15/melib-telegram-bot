@@ -278,6 +278,7 @@ def chargers_response(chargers, radius, location):
         # Siempre hay que retornar al menos el cargador más cercano
         closest_charger = sorted_chargers.pop(0)
         closest_charger_data = melib.device_groups_by_id(closest_charger[0])
+        logger.info('1.- {}'.format(json.dumps(closest_charger_data)))
         closest_charger_distance = closest_charger[1]
         message_charger += f'⚡ 1. {get_charger_text(closest_charger_data, closest_charger_distance)}'
         message_map_markers += f'~{closest_charger_data["lng"]},{closest_charger_data["lat"]},pm2bll1'
@@ -292,6 +293,7 @@ def chargers_response(chargers, radius, location):
             for charger in sorted_chargers:
                 if charger[1] <= radius and pos <= MAX_CHARGERS:
                     charger_data = melib.device_groups_by_id(charger[0])
+                    logger.info('{}.- {}'.format(pos, json.dumps(charger_data)))
                     message_map_markers += f'~{charger_data["lng"]},{charger_data["lat"]},pm2bll{pos}'
                     message_charger += f'⚡ {pos}. {get_charger_text(charger_data, charger[1])}'
                     pos += 1
