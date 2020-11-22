@@ -194,6 +194,8 @@ def search_chargers(update, context):
         message = ''
         try:
             chat_location = json.loads(context.chat_data['location'])
+            logger.info(chat_location)
+            logger.info(context.chat_data.get('onlyAvailable', True))
             location = telegram.Location(float(chat_location['longitude']), float(chat_location['latitude']))
             available_chargers = chargers_list(location, context.chat_data.get('onlyAvailable', True))
             # Si hay estaciones de carga dentro del radio
