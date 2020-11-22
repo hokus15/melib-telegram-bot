@@ -28,8 +28,10 @@ PLACE_TYPE = {
 STATUS = {
     'AVAILABLE': 'libre',
     'OCCUPIED_PARTIAL': 'parcialmente ocupado',
-    'UNAVAILABLE': 'no dispobible',  # Necesario para los tests
-    'OCCUPIED': 'ocupado'  # Necesario para los tests
+    'UNAVAILABLE': 'no dispobible',
+    'OCCUPIED': 'ocupado',
+    'UNKNOWN': 'desconocido',
+    'OFFLINE': 'no gestionado'
 }
 
 HELP_HEADER = 'Prueba a mandarme los comandos /lista, /libres o una ubicación.'
