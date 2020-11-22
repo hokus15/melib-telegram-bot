@@ -181,8 +181,8 @@ def search_chargers(update, context):
                 message = chargers_response(available_chargers, radius, location)
             # Si no se han encontrado estaciones de carga dentro del radio
             else:
-                message = escape_markdown(f'💩 ¡Vaya! No he encontrado ningún cargador en {radius} metros, '
-                                          'comparte otra ubicación y vuelve a probar.')
+                message = f'💩 ¡Vaya! No he encontrado ningún cargador en {radius} metros, '
+                'comparte otra ubicación y vuelve a probar.'
 #            update.callback_query.edit_message_text(parse_mode=telegram.ParseMode.HTML,
 #                                                    disable_web_page_preview=True,
 #                                                    text=f'Vale, busco cargadores en {radius} metros')
@@ -207,12 +207,12 @@ def chargers_help(update, context):
     location_keyboard = telegram.KeyboardButton(text="Enviar mi ubicación actual", request_location=True)
     reply_markup = telegram.ReplyKeyboardMarkup([[location_keyboard]], one_time_keyboard=True)
     update.effective_message.reply_text(
-        text=escape_markdown(f'⚠ Hola {update.effective_user.first_name}, para poder darte '
-                             'información de los cargadores que hay cerca de tu '
-                             'posición, por favor, <b>envíame tu ubicación</b> usando el botón de abajo.\n\n'
-                             f'{HELP_HINT}\n\n'
-                             f'{HELP_LOCATION_INSTRUCTIONS}\n\n'
-                             f'{HELP_FOOTER}'),
+        text=f'⚠ Hola {update.effective_user.first_name}, para poder darte '
+        'información de los cargadores que hay cerca de tu '
+        'posición, por favor, <b>envíame tu ubicación</b> usando el botón de abajo.\n\n'
+        f'{HELP_HINT}\n\n'
+        f'{HELP_LOCATION_INSTRUCTIONS}\n\n'
+        f'{HELP_FOOTER}',
         parse_mode=telegram.ParseMode.HTML,
         reply_markup=reply_markup)
     return LOCATION
@@ -306,11 +306,11 @@ def chargers_response(chargers, radius, location):
 
 
 def get_charger_text(charger, distance):
-    message = f'Cargador para <b>{PLACE_TYPE[charger['devices'][0]['placeType']]} ' \
-        f'{STATUS[charger['status']]}</b> a ' \
+    message = f'Cargador para <b>{PLACE_TYPE[charger["devices"][0]["placeType"]]} ' \
+        f'{STATUS[charger["status"]]}</b> a ' \
         f'<b>{distance:0.0f}</b> metros en ' \
-        f'<a href="https://www.google.com/maps/place/{charger['lat']},{charger['lng']}"' \
-        f'<b>{charger['address'], 2}</b></a>\n'
+        f'<a href="https://www.google.com/maps/place/{charger["lat"]},{charger["lng"]}"' \
+        f'<b>{charger["address"]}</b></a>\n'
     return message
 
 

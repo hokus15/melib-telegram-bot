@@ -46,8 +46,8 @@ class MelibTestCase(unittest.TestCase):
         location = telegram.Location(2.654223, 39.575416)
         response = melibbot.chargers_response(chargers, radius, location)
         self.assertTrue("No he encontrado cargadores disponibles en 500 metros" in response)
-        self.assertTrue(re.search(r"Cargador para \*coche .*\* a \*1000\* metros.*", response, re.DOTALL))
-        self.assertEqual(response.count("Cargador para *coche "), 1)
+        self.assertTrue(re.search(r"Cargador para <b>coche .*</b> a <b>1000</b> metros.*", response, re.DOTALL))
+        self.assertEqual(response.count("Cargador para <b>coche "), 1)
 
     def test_free_chargers_response_one_charger_in_radius(self):
         chargers = {
@@ -57,8 +57,8 @@ class MelibTestCase(unittest.TestCase):
         location = telegram.Location(2.654223, 39.575416)
         response = melibbot.chargers_response(chargers, radius, location)
         self.assertTrue('He encontrado los siguientes cargadores' in response)
-        self.assertTrue(re.search(r"Cargador para \*coche .*\* a \*400\* metros.*", response, re.DOTALL))
-        self.assertEqual(response.count("Cargador para *coche"), 1)
+        self.assertTrue(re.search(r"Cargador para <b>coche .*</b> a <b>400</b> metros.*", response, re.DOTALL))
+        self.assertEqual(response.count("Cargador para <b>coche"), 1)
 
     def test_free_chargers_response_multiple_charger_in_radius(self):
         chargers = {
@@ -72,7 +72,7 @@ class MelibTestCase(unittest.TestCase):
         location = telegram.Location(2.654223, 39.575416)
         response = melibbot.chargers_response(chargers, radius, location)
         self.assertTrue('He encontrado los siguientes cargadores' in response)
-        self.assertTrue(re.search(r".*Cargador para \*coche .*\* a \*400\* metros.*", response, re.DOTALL))
-        self.assertTrue(re.search(r".*Cargador para \*coche .*\* a \*342\* metros.*", response, re.DOTALL))
-        self.assertTrue(re.search(r".*Cargador para \*coche .*\* a \*500\* metros.*", response, re.DOTALL))
-        self.assertEqual(response.count("Cargador para *coche "), 3)
+        self.assertTrue(re.search(r".*Cargador para <b>coche .*</b> a <b>400</b> metros.*", response, re.DOTALL))
+        self.assertTrue(re.search(r".*Cargador para <b>coche .*</b> a <b>342</b> metros.*", response, re.DOTALL))
+        self.assertTrue(re.search(r".*Cargador para <b>coche .*</b> a <b>500</b> metros.*", response, re.DOTALL))
+        self.assertEqual(response.count("Cargador para <b>coche "), 3)
