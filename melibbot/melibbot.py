@@ -194,8 +194,6 @@ def search_chargers(update, context):
         message = ''
         try:
             chat_location = json.loads(context.chat_data['location'])
-            logger.info(chat_location)
-            logger.info(context.chat_data.get('onlyAvailable', True))
             location = telegram.Location(float(chat_location['longitude']), float(chat_location['latitude']))
             available_chargers = chargers_list(location, context.chat_data.get('onlyAvailable', True))
             # Si hay estaciones de carga dentro del radio
@@ -279,6 +277,7 @@ def chargers_response(chargers, radius, location):
         # Siempre hay que retornar al menos el cargador más cercano
         closest_charger = sorted_chargers.pop(0)
         closest_charger_data = melib.device_groups_by_id(closest_charger[0])
+        print.info(closest_charger_data)
         closest_charger_distance = closest_charger[1]
         message_charger += f'⚡ 1. {get_charger_text(closest_charger_data, closest_charger_distance)}'
         message_map_markers += f'~{closest_charger_data["lng"]},{closest_charger_data["lat"]},pm2bll1'
