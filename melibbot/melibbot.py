@@ -247,6 +247,7 @@ def chargers_list(location, onlyAvailable=True):
         "placeType": None
     }
 
+    logger.info(json.dumps(payload))
     all_chargers_json_data = melib.device_groups(payload)
     latlong = (location.latitude, location.longitude)
     chargers = {}
