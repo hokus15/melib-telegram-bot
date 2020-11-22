@@ -144,10 +144,9 @@ def list_chargers_help(update, context):
 @ send_action(telegram.ChatAction.TYPING)
 def chargers_help(update, context):
     location_button = telegram.KeyboardButton(text="Enviar mi ubicación actual", request_location=True)
-    lista_button = telegram.KeyboardButton(text="/lista")
-    libres_button = telegram.KeyboardButton(text="/libres")
-    reply_markup = telegram.ReplyKeyboardMarkup(
-        [[location_button], [libres_button], [lista_button]], one_time_keyboard=True)
+    reply_markup = telegram.ReplyKeyboardMarkup([[location_button]],
+                                                one_time_keyboard=True,
+                                                resize_keyboard=True)
     update.effective_message.reply_text(
         text=f'⚠ Hola {update.effective_user.first_name}, para poder darte '
         'información de los cargadores que hay cerca de tu '
@@ -205,7 +204,6 @@ def search_chargers(update, context):
             else:
                 message = f'💩 ¡Vaya! No he encontrado ningún cargador en {radius} metros, '
                 'comparte otra ubicación y vuelve a probar.'
-            # update.callback_query.edit_message_reply_markup(telegram.InlineKeyboardMarkup([[]]))
             context.bot.send_message(chat_id=update.effective_user.id,
                                      parse_mode=telegram.ParseMode.HTML,
                                      disable_web_page_preview=False,
