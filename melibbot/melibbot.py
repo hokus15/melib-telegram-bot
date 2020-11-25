@@ -209,9 +209,9 @@ def search_chargers(update, context):
                                      disable_web_page_preview=False,
                                      text=message,
                                      reply_markup=telegram.ReplyKeyboardRemove())
-        except KeyError:
-            logger.error('No he podido encontrar la ubicación en chat_data: {}'.format(context.chat_data))
-
+        except KeyError as err:
+            logger.error('Error buscando cargadores: {}'.format(err))
+            logger.error('context.chat_data: {}'.format(context.chat_data))
             update.callback_query.edit_message_text(text='Ups! No he podido realizar la búsqueda, '
                                                     'comparte otra ubicación y vuelve a probar.')
     # Si quiere buscar la estación más cercana
@@ -316,8 +316,8 @@ def get_charger_text(charger, distance):
             f'<a href="https://www.google.com/maps/place/{charger["lat"]},{charger["lng"]}">' \
             f'<b>{charger["address"]}</b></a>\n'
     except KeyError as err:
-        logger.error('Error generando los datos del cargador %s %s', charger, err)
-        raise err
+        raise KeyError('Error generando los datos del cargador {}. No encuentro la equivalencia de: "{}"'
+                       .format(charger, err))
     return message
 
 
