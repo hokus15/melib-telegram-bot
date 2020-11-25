@@ -34,7 +34,7 @@ STATUS = {
     'OFFLINE': 'no gestionado'
 }
 
-HELP_HEADER = 'Prueba a mandarme los comandos /lista, /libres o una ubicación.'
+HELP_HEADER = 'Prueba a decirme algo, mandarme los comandos /lista, /libres o una ubicación.'
 
 HELP_LOCATION_INSTRUCTIONS = 'ℹ <b>Para enviar una ubicación</b> ℹ \n' \
                              '1. Pulsa sobre el clip (📎) que encontrarás en la ventana de mensaje.\n' \
@@ -44,7 +44,7 @@ HELP_LOCATION_INSTRUCTIONS = 'ℹ <b>Para enviar una ubicación</b> ℹ \n' \
 
 HELP_HINT = 'ℹ <b>CONSEJO</b> ℹ\n' \
             'A parte de enviar tu ubicación actual, puedes enviar la ubicación ' \
-            'de tu destino para saber los cargadores que hay libres cerca.'
+            'de tu destino o cualquier otra para saber los cargadores que hay cerca.'
 
 HELP_FOOTER = '‼ <b>ATENCIÓN</b> ‼\n' \
               f'Te voy a devolver como máximo {MAX_CHARGERS} cargadores.\n\n' \
@@ -71,7 +71,7 @@ def restricted(func):
                 text=f'Hola {update.effective_user.first_name}, por '
                      'ahora, no puedes usar el bot, por favor, proporciona '
                      f'el siguiente número al administrador:\n\n<b>{user_id}</b>\n\n'
-                     'Una vez dado de alta prueba a mandarme los comandos /lista o /libres.\n\n'
+                     f'{HELP_HEADER}\n\n'
                      f'{HELP_LOCATION_INSTRUCTIONS}',
                 parse_mode=telegram.ParseMode.HTML)
             message = f'Hola soy {update.effective_user.first_name} {update.effective_user.last_name} '
@@ -149,8 +149,8 @@ def chargers_help(update, context):
                                                 resize_keyboard=True)
     update.effective_message.reply_text(
         text=f'⚠ Hola {update.effective_user.first_name}, para poder darte '
-        'información de los cargadores que hay cerca de tu '
-        'posición, por favor, <b>envíame tu ubicación</b> usando el botón de abajo.\n\n'
+        'información de los cargadores que hay cerca de ti, por favor, '
+        '<b>envíame tu ubicación</b> usando el botón de abajo.\n\n'
         f'{HELP_HINT}\n\n'
         f'{HELP_LOCATION_INSTRUCTIONS}\n\n'
         f'{HELP_FOOTER}',
@@ -283,11 +283,11 @@ def chargers_response(chargers, radius, location):
         message_map_markers += f'~{closest_charger_data["lng"]},{closest_charger_data["lat"]},pm2bll1'
         # Si el cargador más cercano está fuera del radio
         if closest_charger_distance > radius:
-            message_header = '🤬 No he encontrado cargadores disponibles en ' \
+            message_header = '🤬 No he encontrado cargadores en ' \
                 f'{radius} metros, pero el más cercano es:\n\n'
         else:
             message_header = '😁 He encontrado los siguientes cargadores ' \
-                f'disponibles en {radius} metros:\n\n'
+                f'en {radius} metros:\n\n'
             pos = 2
             for charger in sorted_chargers:
                 if charger[1] <= radius and pos <= MAX_CHARGERS:
@@ -309,11 +309,15 @@ def chargers_response(chargers, radius, location):
 
 
 def get_charger_text(charger, distance):
-    message = f'Cargador para <b>{PLACE_TYPE[charger["devices"][0]["placeType"]]} ' \
-        f'{STATUS[charger["status"]]}</b> a ' \
-        f'<b>{distance:0.0f}</b> metros en ' \
-        f'<a href="https://www.google.com/maps/place/{charger["lat"]},{charger["lng"]}">' \
-        f'<b>{charger["address"]}</b></a>\n'
+    try:
+        message = f'Cargador para <b>{PLACE_TYPE[charger["devices"][0]["placeType"]]} ' \
+            f'{STATUS[charger["status"]]}</b> a ' \
+            f'<b>{distance:0.0f}</b> metros en ' \
+            f'<a href="https://www.google.com/maps/place/{charger["lat"]},{charger["lng"]}">' \
+            f'<b>{charger["address"]}</b></a>\n'
+    except KeyError as err:
+        logger.error('Error generando los datos del cargador %s %s', charger, err)
+        raise err
     return message
 
 
