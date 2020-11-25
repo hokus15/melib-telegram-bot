@@ -45,7 +45,7 @@ class MelibTestCase(unittest.TestCase):
         radius = 500
         location = telegram.Location(2.654223, 39.575416)
         response = melibbot.chargers_response(chargers, radius, location)
-        self.assertTrue("No he encontrado cargadores disponibles en 500 metros" in response)
+        self.assertTrue("No he encontrado cargadores en 500 metros" in response)
         self.assertTrue(re.search(r"Cargador para <b>coche .*</b> a <b>1000</b> metros.*", response, re.DOTALL))
         self.assertEqual(response.count("Cargador para <b>coche "), 1)
 

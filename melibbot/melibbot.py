@@ -26,7 +26,7 @@ PLACE_TYPE = {
 }
 
 STATUS = {
-    'AVAILABL': 'libre',
+    'AVAILABLE': 'libre',
     'OCCUPIED_PARTIAL': 'parcialmente ocupado',
     'UNAVAILABLE': 'no disponible',
     'OCCUPIED': 'ocupado',
