@@ -10,8 +10,7 @@ from functools import wraps
 from melibbot import melib
 from melibbot.version import __version__
 from telegram.ext import (MessageHandler, CallbackQueryHandler,
-                          ConversationHandler, Filters)
-from telegram.utils.helpers import escape_markdown
+                          ConversationHandler, Filters, CommandHandler)
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +18,7 @@ valid_users = os.environ.get('VALID_USERS', '').split(';')
 
 admin_user = os.environ.get('ADMIN_USER', valid_users[0])
 
-MAX_CHARGERS = 9
+MAX_CHARGERS = 10
 
 PLACE_TYPE = {
     'CAR': 'coche',
@@ -29,19 +28,39 @@ PLACE_TYPE = {
 STATUS = {
     'AVAILABLE': 'libre',
     'OCCUPIED_PARTIAL': 'parcialmente ocupado',
-    'UNAVAILABLE': 'no dispobible',  # Necesario para los tests
-    'OCCUPIED': 'ocupado'  # Necesario para los tests
+    'UNAVAILABLE': 'no disponible',
+    'OCCUPIED': 'ocupado',
+    'UNKNOWN': 'desconocido',
+    'OFFLINE': 'no gestionado'
 }
 
-SEND_LOCATION_INSTRUCTIONS = 'ℹ *Para enviar una ubicación* ℹ \n' \
-                             '1\\. Pulsa sobre el clip \\(📎\\) que encontrarás en la ventana de mensaje\\.\n' \
-                             '2\\. Elige la opción de `Ubicación`\\.\n' \
-                             '3\\. Desplázate por el mapa hasta la ubicación que quieras\\.\n' \
-                             '4\\. Elije `Enviar la ubicación seleccionada`\\.'
+HELP_HEADER = 'Prueba a decirme algo, mandarme los comandos /lista, /libres o una ubicación.'
 
+HELP_LOCATION_INSTRUCTIONS = 'ℹ <b>Para enviar una ubicación</b> ℹ \n' \
+                             '1. Pulsa sobre el clip (📎) que encontrarás en la ventana de mensaje.\n' \
+                             '2. Elige la opción de `Ubicación`.\n' \
+                             '3. Desplázate por el mapa hasta la ubicación que quieras.\n' \
+                             '4. Elije `Enviar la ubicación seleccionada`.'
+
+HELP_HINT = 'ℹ <b>CONSEJO</b> ℹ\n' \
+            'A parte de enviar tu ubicación actual, puedes enviar la ubicación ' \
+            'de tu destino o cualquier otra para saber los cargadores que hay cerca.'
+
+HELP_FOOTER = '‼ <b>ATENCIÓN</b> ‼\n' \
+              f'Te voy a devolver como máximo {MAX_CHARGERS} cargadores.\n\n' \
+              'La distancia la mido en <b>linea recta</b> entre la ubicación enviada ' \
+              'y la ubicación del cargador. No tengo en cuenta la ruta ' \
+              'ni la altura de ninguno de los dos puntos. Por lo que la ' \
+              'distancia para llegar al cargador puede variar dependiendo ' \
+              'del camino que sigas hasta él.\n\n' \
+              f'<code>v{__version__}</code>'
 
 # Estados de conversación
 LOCATION, RADIUS = range(2)
+
+
+class BotError(Exception):
+    pass
 
 
 def restricted(func):
@@ -54,15 +73,15 @@ def restricted(func):
                            f'{update.effective_user.first_name} {update.effective_user.last_name}')
             update.effective_message.reply_text(
                 text=f'Hola {update.effective_user.first_name}, por '
-                'ahora, no puedes usar el bot, por favor, proporciona '
-                f'el siguiente número al administrador:\n\n*{user_id}*\n\n'
-                'Una vez dado de alta prueba a escribirme algo o enviarme una ubicación\\.\n\n'
-                f'{SEND_LOCATION_INSTRUCTIONS}',
-                parse_mode=telegram.ParseMode.MARKDOWN_V2)
-            message = f'Hola soy {update.effective_user.first_name} {update.effective_user.last_name} ' \
-                f'y mi usuario de Telegram es:\n*{user_id}*\nPor favor dame de ' \
-                'alta en el sistema para que pueda acceder al bot\\.'
-            context.bot.send_message(chat_id=admin_user, text=message, parse_mode=telegram.ParseMode.MARKDOWN_V2)
+                     'ahora, no puedes usar el bot, por favor, proporciona '
+                     f'el siguiente número al administrador:\n\n<b>{user_id}</b>\n\n'
+                     f'{HELP_HEADER}\n\n'
+                     f'{HELP_LOCATION_INSTRUCTIONS}',
+                parse_mode=telegram.ParseMode.HTML)
+            message = f'Hola soy {update.effective_user.first_name} {update.effective_user.last_name} '
+            f'y mi usuario de Telegram es:\n<b>{user_id}</b>\nPor favor dame de '
+            'alta en el sistema para que pueda acceder al bot.'
+            context.bot.send_message(chat_id=admin_user, text=message, parse_mode=telegram.ParseMode.HTML)
             return
         return func(update, context, *args, **kwargs)
     return wrapped
@@ -103,36 +122,42 @@ def error_callback(update, context):
         message = message[:4089] + '</pre>'
     # Envía el mensaje de error al administrador
     context.bot.send_message(chat_id=admin_user, text=message, parse_mode=telegram.ParseMode.HTML)
-    update.effective_message.reply_text(text='Ups\\! Parece que algo no ha salido bien\\.\n '
-                                             'He enviado un mensaje al administrador con '
-                                             'detalles del error para que lo revise\\.\n\n'
-                                             '*Error*: {}'.format(escape_markdown(str(context.error))),
-                                        parse_mode=telegram.ParseMode.MARKDOWN_V2)
+    update.effective_message.reply_text(text=('Ups! Parece que algo no ha salido bien.\n'
+                                              'He enviado un mensaje al administrador con '
+                                              'detalles del error para que lo revise.'),
+                                        parse_mode=telegram.ParseMode.HTML)
     return ConversationHandler.END
 
 
 @ restricted
 @ send_action(telegram.ChatAction.TYPING)
-def help(update, context):
-    location_keyboard = telegram.KeyboardButton(text="Enviar mi ubicación actual", request_location=True)
-    reply_markup = telegram.ReplyKeyboardMarkup([[location_keyboard]], one_time_keyboard=True)
+def free_chargers_help(update, context):
+    context.chat_data['onlyAvailable'] = True
+    return chargers_help(update, context)
+
+
+@ restricted
+@ send_action(telegram.ChatAction.TYPING)
+def list_chargers_help(update, context):
+    context.chat_data['onlyAvailable'] = False
+    return chargers_help(update, context)
+
+
+@ restricted
+@ send_action(telegram.ChatAction.TYPING)
+def chargers_help(update, context):
+    location_button = telegram.KeyboardButton(text="Enviar mi ubicación actual", request_location=True)
+    reply_markup = telegram.ReplyKeyboardMarkup([[location_button]],
+                                                one_time_keyboard=True,
+                                                resize_keyboard=True)
     update.effective_message.reply_text(
         text=f'⚠ Hola {update.effective_user.first_name}, para poder darte '
-             'información de los cargadores que hay libres cerca de tu '
-             'posición, por favor, *envíame tu ubicación* usando el botón de abajo\\.\n\n'
-             'ℹ *CONSEJO* ℹ\n'
-             'A parte de enviar tu ubicación actual, puedes enviar la ubicación '
-             'de tu destino para saber los cargadores que hay libres cerca\\.\n\n'
-             f'{SEND_LOCATION_INSTRUCTIONS}\n\n'
-             '‼ *ATENCIÓN* ‼\n'
-             f'Te voy a devolver como máximo {MAX_CHARGERS} cargadores\\.\n\n'
-             'La distancia la mido en *linea recta* entre la ubicación enviada '
-             'y la ubicación del cargador\\. No tengo en cuenta la ruta '
-             'ni la altura de ninguno de los dos puntos\\. Por lo que la '
-             'distancia para llegar al cargador puede variar dependiendo '
-             'del camino que sigas hasta él\\.\n\n'
-             f'`v{escape_markdown(__version__)}`',
-        parse_mode=telegram.ParseMode.MARKDOWN_V2,
+        'información de los cargadores que hay cerca de ti, por favor, '
+        '<b>envíame tu ubicación</b> usando el botón de abajo.\n\n'
+        f'{HELP_HINT}\n\n'
+        f'{HELP_LOCATION_INSTRUCTIONS}\n\n'
+        f'{HELP_FOOTER}',
+        parse_mode=telegram.ParseMode.HTML,
         reply_markup=reply_markup)
     return LOCATION
 
@@ -174,35 +199,32 @@ def search_chargers(update, context):
         try:
             chat_location = json.loads(context.chat_data['location'])
             location = telegram.Location(float(chat_location['longitude']), float(chat_location['latitude']))
-            available_chargers = free_chargers(location)
+            available_chargers = chargers_list(location, context.chat_data.pop('onlyAvailable', True))
             # Si hay estaciones de carga dentro del radio
             if len(available_chargers) > 0:
-                message = free_chargers_response(available_chargers, radius, location)
-            # Si no se han encontrado estaciones de carga libres dentro del radio
+                message = chargers_response(available_chargers, radius, location)
+            # Si no se han encontrado estaciones de carga dentro del radio
             else:
-                message = f'💩 ¡Vaya\\! No he encontrado ningún cargador libre en {radius} metros, ' \
-                    'comparte otra ubicación y vuelve a probar\\.'
-#            update.callback_query.edit_message_text(parse_mode=telegram.ParseMode.MARKDOWN_V2,
-#                                                    disable_web_page_preview=True,
-#                                                    text=f'Vale, busco cargadores en {radius} metros')
-            update.callback_query.edit_message_reply_markup(telegram.InlineKeyboardMarkup([[]]))
+                message = f'💩 ¡Vaya! No he encontrado ningún cargador en {radius} metros, '
+                'comparte otra ubicación y vuelve a probar.'
             context.bot.send_message(chat_id=update.effective_user.id,
-                                     parse_mode=telegram.ParseMode.MARKDOWN_V2,
+                                     parse_mode=telegram.ParseMode.HTML,
                                      disable_web_page_preview=False,
-                                     text=message)
-        except KeyError:
-            logger.error('No he podido encontrar la ubicación en chat_data: {}'.format(context.chat_data))
+                                     text=message,
+                                     reply_markup=telegram.ReplyKeyboardRemove())
+        except KeyError as err:
+            raise BotError('Error buscando cargadores: {}\ncontext.chat_data: {}.'
+                           .format(err, context.chat_data))
 
-            update.callback_query.edit_message_text(text='Ups! No he podido realizar la búsqueda, '
-                                                    'comparte otra ubicación y vuelve a probar.')
-    # Si quiere buscar la estación libre más cercana
+    # Si quiere buscar la estación más cercana
     else:
         update.callback_query.edit_message_text(f'Vale {update.callback_query.from_user.first_name}, '
                                                 'tú mandas, estación libre más cercana.')
+
     return ConversationHandler.END
 
 
-def free_chargers(location):
+def chargers_list(location, onlyAvailable=True):
     '''
     Devuelve un dict de los cargadores libres o parcialmente ocupados junto
     con la distancia en metros a la ubicación proporcionada.
@@ -222,8 +244,8 @@ def free_chargers(location):
     payload = {
         "bounds": None,
         "idComponentType": None,
-        "onlyAvailable": True,
-        "includeOffline": False,
+        "onlyAvailable": onlyAvailable,
+        "includeOffline": True,
         "chargeType": None,
         "placeType": None
     }
@@ -244,7 +266,7 @@ def free_chargers(location):
     return chargers
 
 
-def free_chargers_response(chargers, radius, location):
+def chargers_response(chargers, radius, location):
     '''
     Prepara el texto de respuesta con las estaciones de carga libres dentro del rango.
     '''
@@ -259,52 +281,58 @@ def free_chargers_response(chargers, radius, location):
         closest_charger = sorted_chargers.pop(0)
         closest_charger_data = melib.device_groups_by_id(closest_charger[0])
         closest_charger_distance = closest_charger[1]
-        message_charger += f'⚡ 1\\. {get_charger_text(closest_charger_data, closest_charger_distance)}'
+        message_charger += f'⚡ 1. {get_charger_text(closest_charger_data, closest_charger_distance)}'
         message_map_markers += f'~{closest_charger_data["lng"]},{closest_charger_data["lat"]},pm2bll1'
         # Si el cargador más cercano está fuera del radio
         if closest_charger_distance > radius:
-            message_header = '🤬 No he encontrado cargadores disponibles en ' \
-                             f'{radius} metros, pero el más cercano es:\n\n'
+            message_header = '🤬 No he encontrado cargadores en ' \
+                f'{radius} metros, pero el más cercano es:\n\n'
         else:
             message_header = '😁 He encontrado los siguientes cargadores ' \
-                             f'disponibles en {radius} metros:\n\n'
+                f'en {radius} metros:\n\n'
             pos = 2
             for charger in sorted_chargers:
                 if charger[1] <= radius and pos <= MAX_CHARGERS:
                     charger_data = melib.device_groups_by_id(charger[0])
                     message_map_markers += f'~{charger_data["lng"]},{charger_data["lat"]},pm2bll{pos}'
-                    message_charger += f'⚡ {pos}\\. {get_charger_text(charger_data, charger[1])}'
+                    message_charger += f'⚡ {pos}. {get_charger_text(charger_data, charger[1])}'
                     pos += 1
                 else:
                     break
         static_map = 'https://static-maps.yandex.ru/1.x/?lang=es_ES&l=map&ll=' \
-                     f'{location.longitude},{location.latitude}' \
-                     f'&size=300,300&pt={location.longitude},{location.latitude},' \
+            f'{location.longitude},{location.latitude}' \
+            f'&size=300,300&pt={location.longitude},{location.latitude},' \
                      f'pm2rdl{message_map_markers}'
-        message = f'[🧐]({static_map}){message_header}{message_charger}'
+        message = f'<a href="{static_map}">🧐</a>{message_header}{message_charger}'
     else:
-        logger.error('Parece que no hay ningún cargador libre')
-        message = 'Algo muy gordo ha ocurrido porque no hay ningún cargador libre en las Baleares'
-    # print(message)
+        logger.error('Parece que no hay ningún cargador disponible')
+        message = 'Algo muy gordo ha ocurrido porque no hay ningún cargador disponible en las Baleares'
     return message
 
 
 def get_charger_text(charger, distance):
-    message = f"Cargador para *{PLACE_TYPE[charger['devices'][0]['placeType']]} " \
-        f"{STATUS[charger['status']]}* a " \
-        f"*{distance:0.0f}* metros en " \
-        f"[*{escape_markdown(charger['address'], 2)}*]" \
-        f"(https://www.google.com/maps/place/{charger['lat']},{charger['lng']})\n"
+    try:
+        message = f'Cargador para <b>{PLACE_TYPE[charger["devices"][0]["placeType"]]} ' \
+            f'{STATUS[charger["status"]]}</b> a ' \
+            f'<b>{distance:0.0f}</b> metros en ' \
+            f'<a href="https://www.google.com/maps/place/{charger["lat"]},{charger["lng"]}">' \
+            f'<b>{charger["address"]}</b></a>\n'
+    except KeyError as err:
+        raise BotError('No encuentro la equivalencia de: {}\nError generando los datos del cargador {}.'
+                       .format(err, json.dumps(charger)))
     return message
 
 
 def get_handler():
     conv_handler = ConversationHandler(
-        entry_points=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, request_radius)],
+        entry_points=[CommandHandler('lista', list_chargers_help),
+                      CommandHandler('libres', free_chargers_help),
+                      MessageHandler(Filters.location, request_radius),
+                      MessageHandler(Filters.text, chargers_help)],
         states={
             LOCATION: [MessageHandler(Filters.location, request_radius)],
             RADIUS: [CallbackQueryHandler(search_chargers)],
         },
-        fallbacks=[MessageHandler(Filters.text, help), MessageHandler(Filters.location, request_radius)]
+        fallbacks=[MessageHandler(Filters.text, chargers_help), MessageHandler(Filters.location, request_radius)]
     )
     return conv_handler
