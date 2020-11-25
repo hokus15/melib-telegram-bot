@@ -2,6 +2,30 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.0 (2020-11-25)
+### Feature
+* Only show reply keyboard when needed ([`06760a3`](https://github.com/hokus15/melib-telegram-bot/commit/06760a3d1d83ece33351115db7690d953b6bb7a7))
+* Add lista and libres commands ([`3da581c`](https://github.com/hokus15/melib-telegram-bot/commit/3da581c247c4ecea334e4397f3210866e5174e19))
+
+### Fix
+* Changes in texts returned by the bot and better error handling ([`f138dbd`](https://github.com/hokus15/melib-telegram-bot/commit/f138dbd75874dec297104bfeee12e9db75a02982))
+* IF any text is sent to the bot, it will look for free chargers ([`b887132`](https://github.com/hokus15/melib-telegram-bot/commit/b887132f15955215c6c34c5b38cd3772d0bb279b))
+* Pop onlyAvailable info instead of getting it ([`9a68c98`](https://github.com/hokus15/melib-telegram-bot/commit/9a68c98c360f5770e675543f3b8f68eca8c3892a))
+* Remove reply keyboard when not needed ([`e6ef39b`](https://github.com/hokus15/melib-telegram-bot/commit/e6ef39b8f0c41046aa7a14af3b346e2ee205d9bb))
+* Conversation tests ([`0a71919`](https://github.com/hokus15/melib-telegram-bot/commit/0a7191933aaca14d4d9843bdc80e95f334b21933))
+* Added needed charger statuses ([`a0e1833`](https://github.com/hokus15/melib-telegram-bot/commit/a0e18334fcce034ab7cbf9ff7bf31b47d3f46753))
+* Debugging ([`ca4287c`](https://github.com/hokus15/melib-telegram-bot/commit/ca4287c6105d1e7e279137506b0ff9b81310fc70))
+* Added command buttons to reply keyboard ([`804fb68`](https://github.com/hokus15/melib-telegram-bot/commit/804fb68885bcec8deb077068a7b8971f39419944))
+* Inlcude offline chargers ([`976c8ec`](https://github.com/hokus15/melib-telegram-bot/commit/976c8ecc8d8fae1ad17e3ff0814e556ddab3fe44))
+* Fix fallback method ([`7300b41`](https://github.com/hokus15/melib-telegram-bot/commit/7300b411b07dead8a140f2124cdfdba19491a87a))
+* Markup errors in text ([`3d7716a`](https://github.com/hokus15/melib-telegram-bot/commit/3d7716ac2c59e9a3d7fb06a3759b18eba43de84a))
+* Fix map link ([`53a01ff`](https://github.com/hokus15/melib-telegram-bot/commit/53a01ffcc044af9b86d1c609c0e3498bfd58a3fb))
+* Texts corrections ([`40323d0`](https://github.com/hokus15/melib-telegram-bot/commit/40323d0d9abdbece62ba5cc62717fc38bf279139))
+* Fix unit tests ([`5cf17fb`](https://github.com/hokus15/melib-telegram-bot/commit/5cf17fbb6cc998dc5651e3fa4c20f0ad0b6646d1))
+* Change parse mode to HTML ([`677cd62`](https://github.com/hokus15/melib-telegram-bot/commit/677cd6254058834561ce379598b96cd71b4cdd94))
+* Escape markdown ([`7fd0a03`](https://github.com/hokus15/melib-telegram-bot/commit/7fd0a03f0e92eb28ae40bf483f19e2c8cd65940e))
+* Fix misspelling ([`3e4cb9a`](https://github.com/hokus15/melib-telegram-bot/commit/3e4cb9abb7852f48ecc5defd6ecf25605b060a04))
+
 ## v1.1.0 (2020-11-19)
 ### Feature
 * Add ADMIN_USER as a env variable instead of taking the first user in VALID_USERS as admin ([`3bc5f4b`](https://github.com/hokus15/melib-telegram-bot/commit/3bc5f4b6c74ea74a1a6b93fa0d632774eecc2337))
