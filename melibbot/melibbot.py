@@ -210,10 +210,11 @@ def search_chargers(update, context):
                                      text=message,
                                      reply_markup=telegram.ReplyKeyboardRemove())
         except KeyError as err:
-            logger.error('Error buscando cargadores: {}'.format(err))
-            logger.error('context.chat_data: {}'.format(context.chat_data))
+            logger.error('context.chat_data: {}. ERROR: {}'.format(context.chat_data, err))
             update.callback_query.edit_message_text(text='Ups! No he podido realizar la búsqueda, '
                                                     'comparte otra ubicación y vuelve a probar.')
+            raise err
+
     # Si quiere buscar la estación más cercana
     else:
         update.callback_query.edit_message_text(f'Vale {update.callback_query.from_user.first_name}, '
