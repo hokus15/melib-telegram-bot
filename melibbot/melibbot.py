@@ -321,7 +321,8 @@ def get_handler():
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('lista', list_chargers_help),
                       CommandHandler('libres', free_chargers_help),
-                      MessageHandler(Filters.location, request_radius)],
+                      MessageHandler(Filters.location, request_radius),
+                      MessageHandler(Filters.text, chargers_help)],
         states={
             LOCATION: [MessageHandler(Filters.location, request_radius)],
             RADIUS: [CallbackQueryHandler(search_chargers)],
