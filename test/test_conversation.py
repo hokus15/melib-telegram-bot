@@ -36,7 +36,7 @@ class ConversationTestCase(aiounittest.AsyncTestCase):
             # el botón de abajo.
             resp: Message = await conv.get_response()
             self.assertTrue('Hola Jordi, para poder darte información de los cargadores que '
-                            'hay cerca de tu posición, por favor, envíame tu ubicación usando '
+                            'hay cerca de ti, por favor, envíame tu ubicación usando '
                             'el botón de abajo.' in resp.raw_text)
 #            print('Bot < {}\n[Enviar mi ubicación actual]\n\n'.format(resp.raw_text))
             # User > Click 'Enviar mi ubicación actual' button
@@ -68,7 +68,7 @@ class ConversationTestCase(aiounittest.AsyncTestCase):
             resp = await conv.get_response()
 #            print('Bot < {}\n\n'.format(resp.raw_text))
             self.assertTrue(
-                'No he encontrado cargadores disponibles en 500 metros, pero el más cercano es:' in resp.raw_text)
+                'No he encontrado cargadores en 500 metros, pero el más cercano es:' in resp.raw_text)
             self.assertTrue('Cargador para ' in resp.raw_text)
             self.assertEqual(resp.raw_text.count('Cargador para '), 1)
         await client.disconnect()
@@ -89,7 +89,7 @@ class ConversationTestCase(aiounittest.AsyncTestCase):
             # el botón de abajo.
             resp: Message = await conv.get_response()
             self.assertTrue('Hola Jordi, para poder darte información de los cargadores que '
-                            'hay cerca de tu posición, por favor, envíame tu ubicación usando '
+                            'hay cerca de ti, por favor, envíame tu ubicación usando '
                             'el botón de abajo.' in resp.raw_text)
 #            print('Bot < {}\n[Enviar mi ubicación actual]\n\n'.format(resp.raw_text))
             # User > Click 'Enviar mi ubicación actual' button
