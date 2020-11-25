@@ -59,6 +59,10 @@ HELP_FOOTER = '‼ <b>ATENCIÓN</b> ‼\n' \
 LOCATION, RADIUS = range(2)
 
 
+class BotError(Exception):
+    pass
+
+
 def restricted(func):
     """Decorator: Comprueba si el usuario puede ejecutar el comando `func`."""
     @wraps(func)
@@ -209,8 +213,8 @@ def search_chargers(update, context):
                                      text=message,
                                      reply_markup=telegram.ReplyKeyboardRemove())
         except KeyError as err:
-            logger.error('Error buscando cargadores.\nERROR: {}\ncontext.chat_data: {}.'.format(err, context.chat_data))
-            raise err
+            raise BotError('Error buscando cargadores: {}\ncontext.chat_data: {}.'
+                           .format(err, context.chat_data))
 
     # Si quiere buscar la estación más cercana
     else:
@@ -314,8 +318,8 @@ def get_charger_text(charger, distance):
             f'<a href="https://www.google.com/maps/place/{charger["lat"]},{charger["lng"]}">' \
             f'<b>{charger["address"]}</b></a>\n'
     except KeyError as err:
-        raise KeyError('Error generando los datos del cargador {}. No encuentro la equivalencia de: {}'
-                       .format(json.dumps(charger), err))
+        raise BotError('No encuentro la equivalencia de: {}\nError generando los datos del cargador {}.'
+                       .format(err, json.dumps(charger)))
     return message
 
 
