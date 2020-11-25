@@ -118,10 +118,9 @@ def error_callback(update, context):
         message = message[:4089] + '</pre>'
     # Envía el mensaje de error al administrador
     context.bot.send_message(chat_id=admin_user, text=message, parse_mode=telegram.ParseMode.HTML)
-    update.effective_message.reply_text(text=('Ups! Parece que algo no ha salido bien.\n '
+    update.effective_message.reply_text(text=('Ups! Parece que algo no ha salido bien.\n'
                                               'He enviado un mensaje al administrador con '
-                                              'detalles del error para que lo revise.\n\n'
-                                              '<b>Error</b>: {}'.format(str(context.error))),
+                                              'detalles del error para que lo revise.'),
                                         parse_mode=telegram.ParseMode.HTML)
     return ConversationHandler.END
 
@@ -210,7 +209,7 @@ def search_chargers(update, context):
                                      text=message,
                                      reply_markup=telegram.ReplyKeyboardRemove())
         except KeyError as err:
-            logger.error('context.chat_data: {}.\n\nERROR: {}'.format(context.chat_data, err))
+            logger.error('Error buscando cargadores.\nERROR: {}\ncontext.chat_data: {}.'.format(err, context.chat_data))
             raise err
 
     # Si quiere buscar la estación más cercana
