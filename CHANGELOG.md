@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.1 (2021-01-10)
+### Fix
+* Fix admin message when a restricted user access the bot. ([`eab37f8`](https://github.com/hokus15/melib-telegram-bot/commit/eab37f8c0b45268fcc5a3a0834826fe721522db1))
+
 ## v1.2.0 (2020-11-25)
 ### Feature
 * Only show reply keyboard when needed ([`06760a3`](https://github.com/hokus15/melib-telegram-bot/commit/06760a3d1d83ece33351115db7690d953b6bb7a7))
