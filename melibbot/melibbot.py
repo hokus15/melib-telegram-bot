@@ -75,13 +75,16 @@ def restricted(func):
                 text=f'Hola {update.effective_user.first_name}, por '
                      'ahora, no puedes usar el bot, por favor, proporciona '
                      f'el siguiente número al administrador:\n\n<b>{user_id}</b>\n\n'
+                     'Una vez dado de alta:\n'
                      f'{HELP_HEADER}\n\n'
                      f'{HELP_LOCATION_INSTRUCTIONS}',
                 parse_mode=telegram.ParseMode.HTML)
-            message = f'Hola soy {update.effective_user.first_name} {update.effective_user.last_name} '
-            f'y mi usuario de Telegram es:\n<b>{user_id}</b>\nPor favor dame de '
-            'alta en el sistema para que pueda acceder al bot.'
-            context.bot.send_message(chat_id=admin_user, text=message, parse_mode=telegram.ParseMode.HTML)
+            context.bot.send_message(
+                chat_id=admin_user,
+                text=f'Hola soy {update.effective_user.first_name} {update.effective_user.last_name} '
+                f'y mi usuario de Telegram es:\n<b>{user_id}</b>\nPor favor dame de '
+                'alta en el sistema para que pueda acceder al bot.',
+                parse_mode=telegram.ParseMode.HTML)
             return
         return func(update, context, *args, **kwargs)
     return wrapped
